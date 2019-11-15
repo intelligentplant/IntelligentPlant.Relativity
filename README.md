@@ -14,7 +14,7 @@ var enGB = RelativityParser.GetParser("en-GB");
 var fiFI = RelativityParser.GetParser("fi-FI");
 ```
 
-If a parser is not registered for a given culture (or any of its parent cultures), it will fall back to using `RelativityParser.Default`.
+If a parser is not registered for a given culture (or any of its parent cultures), it will fall back to using `RelativityParser.Default`. If a parser exists for a parent culture but not the requested culture (e.g. a registration exists for `en` but not `en-GB`), a new entry will be added to the parser list for the more-specific culture that uses the same parser settings but a different `CultureInfo` to the entry for the parent culture.
 
 
 # Parsing Timestamps

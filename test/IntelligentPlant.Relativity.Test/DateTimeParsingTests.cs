@@ -29,6 +29,7 @@ namespace IntelligentPlant.Relativity.Test {
 
         [DataTestMethod]
         [DataRow("")] // Should fall back to invariant culture
+        [DataRow("en-US")]
         [DataRow("en-GB")]
         [DataRow("fi-FI")]
         public void BaseRelativeDateTimeShouldBeParsed(string culture) {
@@ -142,6 +143,7 @@ namespace IntelligentPlant.Relativity.Test {
 
         [DataTestMethod]
         [DataRow("")] // Should fall back to invariant culture
+        [DataRow("en-US")]
         [DataRow("en-GB")]
         [DataRow("fi-FI")]
         public void RelativeDateTimeWithOffsetFromCurrentTimeShouldBeParsed(string culture) {

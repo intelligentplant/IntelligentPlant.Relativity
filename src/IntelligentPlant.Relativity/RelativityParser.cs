@@ -275,16 +275,32 @@ namespace IntelligentPlant.Relativity {
                 return Default;
             }
 
+            var ci = cultureInfo;
+
             while (true) { 
-                if (cultureInfo == null) {
+                if (ci == null) {
                     break;
                 }
 
-                if (s_parserInstances.TryGetValue(cultureInfo.Name, out var parser)) {
+                if (s_parserInstances.TryGetValue(ci.Name, out var parser)) {
+                    if (!string.Equals(ci.Name, cultureInfo.Name, StringComparison.OrdinalIgnoreCase) &&
+                        !string.Equals(ci.Name, CultureInfo.InvariantCulture.Name, StringComparison.OrdinalIgnoreCase)) {
+                        // We have found an entry for a parent culture of the one that was originally 
+                        // requested (e.g. "en" instead of "en-GB"). We'll create and return a cached 
+                        // entry for the specific culture that was requested, in case e.g. the 
+                        // specific culture uses a different first day of week to the parent culture.
+                        //
+                        // Note that we don't create the cached entry if the culture we found was 
+                        // the invariant culture.
+                        return s_parserInstances.GetOrAdd(cultureInfo.Name, key => new RelativityParser(cultureInfo, parser.BaseTime, parser.TimeOffset));
+                    }
+
+                    // We found an exact match for the requested culture, or we are returning the 
+                    // parser for the invariant culture.
                     return parser;
                 }
 
-                cultureInfo = cultureInfo.Parent;
+                ci = ci.Parent;
             }
 
             return Default;
