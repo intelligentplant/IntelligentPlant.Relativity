@@ -1,0 +1,48 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29326.143
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{10A2813D-C970-4F6F-9A59-94F7C972257F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{1059D2D0-D6FE-4930-9EFD-B01E5D605A1E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{45E99843-33D9-4E2B-B593-296B1C89D041}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntelligentPlant.Relativity", "src\IntelligentPlant.Relativity\IntelligentPlant.Relativity.csproj", "{76666543-5A66-4D6C-AC49-1F7C251B823F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntelligentPlant.Relativity.Example", "examples\IntelligentPlant.Relativity.Example\IntelligentPlant.Relativity.Example.csproj", "{1E455112-04D3-4222-B2BE-90EF9E1B6061}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntelligentPlant.Relativity.Test", "test\IntelligentPlant.Relativity.Test\IntelligentPlant.Relativity.Test.csproj", "{8A2958F6-9128-4A82-B1B0-B1ACCEB33D18}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{76666543-5A66-4D6C-AC49-1F7C251B823F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76666543-5A66-4D6C-AC49-1F7C251B823F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76666543-5A66-4D6C-AC49-1F7C251B823F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76666543-5A66-4D6C-AC49-1F7C251B823F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E455112-04D3-4222-B2BE-90EF9E1B6061}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E455112-04D3-4222-B2BE-90EF9E1B6061}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E455112-04D3-4222-B2BE-90EF9E1B6061}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E455112-04D3-4222-B2BE-90EF9E1B6061}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8A2958F6-9128-4A82-B1B0-B1ACCEB33D18}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8A2958F6-9128-4A82-B1B0-B1ACCEB33D18}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8A2958F6-9128-4A82-B1B0-B1ACCEB33D18}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8A2958F6-9128-4A82-B1B0-B1ACCEB33D18}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{76666543-5A66-4D6C-AC49-1F7C251B823F} = {10A2813D-C970-4F6F-9A59-94F7C972257F}
+		{1E455112-04D3-4222-B2BE-90EF9E1B6061} = {1059D2D0-D6FE-4930-9EFD-B01E5D605A1E}
+		{8A2958F6-9128-4A82-B1B0-B1ACCEB33D18} = {45E99843-33D9-4E2B-B593-296B1C89D041}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {94DF2EE3-033D-46CD-9EC3-7BC808B13372}
+	EndGlobalSection
+EndGlobal
