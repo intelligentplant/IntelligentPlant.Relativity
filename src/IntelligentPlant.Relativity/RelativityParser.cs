@@ -53,6 +53,16 @@ namespace IntelligentPlant.Relativity {
         public RelativityTimeOffsetSettings TimeOffset { get; }
 
         /// <summary>
+        /// The regular expression pattern used to match relative timestamps.
+        /// </summary>
+        public string RelativeTimestampRegexPattern { get; }
+
+        /// <summary>
+        /// The regular expression pattern used to match durations.
+        /// </summary>
+        public string DurationRegexPattern { get; }
+
+        /// <summary>
         /// The regular expression for parsing duration expressions.
         /// </summary>
         private Regex _timeSpanRegex;
@@ -96,64 +106,87 @@ namespace IntelligentPlant.Relativity {
             CultureInfo = cultureInfo ?? throw new ArgumentNullException(nameof(cultureInfo));
             BaseTime = baseTimeSettings ?? throw new ArgumentNullException(nameof(baseTimeSettings));
             TimeOffset = timeOffsetSettings ?? throw new ArgumentNullException(nameof(timeOffsetSettings));
-            
-            var timeSpanRegexPattern = string.Concat(
+
+            var timeSpanUnits = new[] {
+                TimeOffset.Weeks,
+                TimeOffset.Days,
+                TimeOffset.Hours,
+                TimeOffset.Minutes,
+                TimeOffset.Seconds,
+                TimeOffset.Milliseconds
+            }.Where(x => x != null).ToArray();
+
+            DurationRegexPattern = string.Concat(
                 @"^\s*(?<count>[0-9]+)\s*(?<unit>",
                 string.Join(
                     "|",
-                    EscapeRegexSpecialCharacters(TimeOffset.Weeks),
-                    EscapeRegexSpecialCharacters(TimeOffset.Days),
-                    EscapeRegexSpecialCharacters(TimeOffset.Hours),
-                    EscapeRegexSpecialCharacters(TimeOffset.Minutes),
-                    EscapeRegexSpecialCharacters(TimeOffset.Seconds),
-                    EscapeRegexSpecialCharacters(TimeOffset.Milliseconds)
+                    timeSpanUnits.Select(x => EscapeRegexSpecialCharacters(x))
                 ),
                 @")\s*$"
             );
-            _timeSpanRegex = new Regex(timeSpanRegexPattern, RegexOptions.IgnoreCase);
+            _timeSpanRegex = new Regex(DurationRegexPattern, RegexOptions.IgnoreCase);
 
-            var dateTimeRegexPattern = string.Concat(
+            var baseTimes = new[] {
+                BaseTime.CurrentYear,
+                BaseTime.CurrentMonth,
+                BaseTime.CurrentWeek,
+                BaseTime.CurrentDay,
+                BaseTime.CurrentHour,
+                BaseTime.CurrentMinute,
+                BaseTime.CurrentSecond,
+                BaseTime.Now,
+                BaseTime.NowAlt
+            }.Where(x => x != null).ToArray();
+
+            var timeOffsets = new[] {
+                TimeOffset.Years,
+                TimeOffset.Months,
+                TimeOffset.Weeks,
+                TimeOffset.Days,
+                TimeOffset.Hours,
+                TimeOffset.Minutes,
+                TimeOffset.Seconds,
+                TimeOffset.Milliseconds
+            }.ToArray();
+
+            var fractionalTimeOffsets = new[] {
+                TimeOffset.Days,
+                TimeOffset.Hours,
+                TimeOffset.Minutes,
+                TimeOffset.Seconds,
+                TimeOffset.Milliseconds
+            }.ToArray();
+
+            RelativeTimestampRegexPattern = string.Concat(
                 @"^\s*(?<base>",
                 string.Join(
                     "|",
-                    EscapeRegexSpecialCharacters(BaseTime.CurrentYear),
-                    EscapeRegexSpecialCharacters(BaseTime.CurrentMonth),
-                    EscapeRegexSpecialCharacters(BaseTime.CurrentWeek),
-                    EscapeRegexSpecialCharacters(BaseTime.CurrentDay),
-                    EscapeRegexSpecialCharacters(BaseTime.CurrentHour),
-                    EscapeRegexSpecialCharacters(BaseTime.CurrentMinute),
-                    EscapeRegexSpecialCharacters(BaseTime.CurrentSecond),
-                    EscapeRegexSpecialCharacters(BaseTime.Now),
-                    EscapeRegexSpecialCharacters(BaseTime.NowAlt)
+                    baseTimes.Select(x => EscapeRegexSpecialCharacters(x))
                 ),
-                @")\s*(?:(?<operator>\+|-)\s*(?:(?<count>[0-9]+)\s*(?<unit>",
+                @")\s*(?:(?<operator>\+|-)\s*",
+                // Units that can be expresses as whole numbers. Guaranteed to have length > 0
+                @"(?:(?<count>[0-9]+)\s*(?<unit>",
                 string.Join(
-                    // All units can be expresses as whole numbers.
                     "|",
-                    EscapeRegexSpecialCharacters(TimeOffset.Years),
-                    EscapeRegexSpecialCharacters(TimeOffset.Months),
-                    EscapeRegexSpecialCharacters(TimeOffset.Weeks),
-                    EscapeRegexSpecialCharacters(TimeOffset.Days),
-                    EscapeRegexSpecialCharacters(TimeOffset.Hours),
-                    EscapeRegexSpecialCharacters(TimeOffset.Minutes),
-                    EscapeRegexSpecialCharacters(TimeOffset.Seconds),
-                    EscapeRegexSpecialCharacters(TimeOffset.Milliseconds)
+                    timeOffsets.Select(x => EscapeRegexSpecialCharacters(x))
                 ),
-                @"))|(?:(?<count>[0-9]+",
-                EscapeRegexSpecialCharacters(CultureInfo.NumberFormat?.NumberDecimalSeparator ?? CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator),
-                @"[0-9]+)\s*(?<unit>",
-                string.Join(
-                    // Only some units can be expressed as fractions.
-                    "|",
-                    EscapeRegexSpecialCharacters(TimeOffset.Days),
-                    EscapeRegexSpecialCharacters(TimeOffset.Hours),
-                    EscapeRegexSpecialCharacters(TimeOffset.Minutes),
-                    EscapeRegexSpecialCharacters(TimeOffset.Seconds),
-                    EscapeRegexSpecialCharacters(TimeOffset.Milliseconds)
-                ),
-                @")))?\s*$"
+                @"))",
+                fractionalTimeOffsets.Length == 0
+                    ? string.Empty
+                    : string.Concat(
+                        // Units that can be expressed as fractions.
+                        @"|(?:(?<count>[0-9]+",
+                        EscapeRegexSpecialCharacters(CultureInfo.NumberFormat?.NumberDecimalSeparator ?? CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator),
+                        @"[0-9]+)\s*(?<unit>",
+                        string.Join(
+                            "|",
+                            fractionalTimeOffsets.Select(x => EscapeRegexSpecialCharacters(x))
+                        ),
+                        @"))"
+                    ),
+                @")?\s*$"
             );
-            _relativeDateTimeRegex = new Regex(dateTimeRegexPattern, RegexOptions.IgnoreCase);
+            _relativeDateTimeRegex = new Regex(RelativeTimestampRegexPattern, RegexOptions.IgnoreCase);
         }
 
 
@@ -311,7 +344,7 @@ namespace IntelligentPlant.Relativity {
         /// <exception cref="ArgumentException">
         ///   The <see cref="CultureInfo"/> for the <paramref name="parser"/> is <see cref="CultureInfo.InvariantCulture"/>.
         /// </exception>
-        public static void Register(RelativityParser parser) {
+        public static void RegisterParser(RelativityParser parser) {
             if (parser == null) {
                 throw new ArgumentNullException(nameof(parser));
             }

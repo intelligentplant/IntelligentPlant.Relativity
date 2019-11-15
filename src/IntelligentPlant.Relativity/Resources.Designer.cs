@@ -61,6 +61,15 @@ namespace IntelligentPlant.Relativity {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to At least one of the following units must be specified: milliseconds, seconds, minutes, hours, days, weeks.
+        /// </summary>
+        internal static string Error_AtLeastOneTimeSpanUnitIsRequired {
+            get {
+                return ResourceManager.GetString("Error_AtLeastOneTimeSpanUnitIsRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The parser for the invariant culture cannot be replaced..
         /// </summary>
         internal static string Error_CannotReplaceInvariantCultureParser {

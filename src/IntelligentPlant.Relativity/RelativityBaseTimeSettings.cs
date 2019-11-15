@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace IntelligentPlant.Relativity {
+﻿namespace IntelligentPlant.Relativity {
 
     /// <summary>
     /// Describes the identifiers that can be used as base times in a relative timestamp.
@@ -8,47 +6,55 @@ namespace IntelligentPlant.Relativity {
     public class RelativityBaseTimeSettings {
 
         /// <summary>
-        /// The start of the current calendar year.
+        /// The start of the current calendar year. When <see langword="null"/>, this base time 
+        /// cannot be used.
         /// </summary>
         public string CurrentYear { get; }
 
         /// <summary>
-        /// The start of the current month.
+        /// The start of the current month. When <see langword="null"/>, this base time 
+        /// cannot be used.
         /// </summary>
         public string CurrentMonth { get; }
 
         /// <summary>
-        /// The start of the current week.
+        /// The start of the current week. When <see langword="null"/>, this base time 
+        /// cannot be used.
         /// </summary>
         public string CurrentWeek { get; }
 
         /// <summary>
-        /// The start of the current day.
+        /// The start of the current day. When <see langword="null"/>, this base time 
+        /// cannot be used.
         /// </summary>
         public string CurrentDay { get; }
 
         /// <summary>
-        /// The start of the current hour.
+        /// The start of the current hour. When <see langword="null"/>, this base time 
+        /// cannot be used.
         /// </summary>
         public string CurrentHour { get; }
 
         /// <summary>
-        /// The start of the current minute.
+        /// The start of the current minute. When <see langword="null"/>, this base time 
+        /// cannot be used.
         /// </summary>
         public string CurrentMinute { get; }
 
         /// <summary>
-        /// The start of the current second.
+        /// The start of the current second. When <see langword="null"/>, this base time 
+        /// cannot be used.
         /// </summary>
         public string CurrentSecond { get; }
 
         /// <summary>
-        /// The current time.
+        /// The current time. When <see langword="null"/>, this base time cannot be used.
         /// </summary>
         public string Now { get; }
 
         /// <summary>
-        /// The current time (alternative format).
+        /// The current time (alternative format). This keyword is constant and is always 
+        /// available.
         /// </summary>
         public string NowAlt { get { return "*"; } }
 

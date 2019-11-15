@@ -1,4 +1,7 @@
-﻿namespace IntelligentPlant.Relativity {
+﻿using System;
+using System.Linq;
+
+namespace IntelligentPlant.Relativity {
 
     /// <summary>
     /// Describes the identifiers that can be used to describe a period of time.
@@ -7,43 +10,49 @@
 
         /// <summary>
         /// Years. Not available when parsing time span literals. Quanities must be specified 
-        /// using whole numbers.
+        /// using whole numbers. When <see langword="null"/>, this unit cannot be used.
         /// </summary>
         public string Years { get; }
 
         /// <summary>
         /// Months. Not available when parsing time span literals. Quanities must be specified 
-        /// using whole numbers.
+        /// using whole numbers. When <see langword="null"/>, this unit cannot be used.
         /// </summary>
         public string Months { get; }
 
         /// <summary>
-        /// Weeks. Quanities must be specified using whole numbers.
+        /// Weeks. Quanities must be specified using whole numbers. When <see langword="null"/>, 
+        /// this unit cannot be used.
         /// </summary>
         public string Weeks { get; }
 
         /// <summary>
-        /// Days. Quanities can be specified using whole or fractional numbers.
+        /// Days. Quanities can be specified using whole or fractional numbers. When 
+        /// <see langword="null"/>, this unit cannot be used.
         /// </summary>
         public string Days { get; }
 
         /// <summary>
-        /// Hours. Quanities can be specified using whole or fractional numbers.
+        /// Hours. Quanities can be specified using whole or fractional numbers. When 
+        /// <see langword="null"/>, this unit cannot be used.
         /// </summary>
         public string Hours { get; }
 
         /// <summary>
-        /// Minutes. Quanities can be specified using whole or fractional numbers.
+        /// Minutes. Quanities can be specified using whole or fractional numbers. When 
+        /// <see langword="null"/>, this unit cannot be used.
         /// </summary>
         public string Minutes { get; }
 
         /// <summary>
-        /// Seconds. Quanities can be specified using whole or fractional numbers.
+        /// Seconds. Quanities can be specified using whole or fractional numbers. When 
+        /// <see langword="null"/>, this unit cannot be used.
         /// </summary>
         public string Seconds { get; }
 
         /// <summary>
-        /// Milliseconds. Quanities can be specified using whole or fractional numbers.
+        /// Milliseconds. Quanities can be specified using whole or fractional numbers. When 
+        /// <see langword="null"/>, this unit cannot be used.
         /// </summary>
         public string Milliseconds { get; }
 
@@ -83,24 +92,32 @@
         ///   The identifier to use for milliseconds. Specify <see langword="null"/> or white space to 
         ///   disable this unit.
         /// </param>
+        /// <exception cref="ArgumentException">
+        ///   All specified units are <see langword="null"/> or white space.
+        /// </exception>
         public RelativityTimeOffsetSettings(
-            string years = "Y",
-            string months = "MO",
-            string weeks = "W",
-            string days = "D",
-            string hours = "H",
-            string minutes = "M",
+            string milliseconds = "MS",
             string seconds = "S",
-            string milliseconds = "MS"
+            string minutes = "M",
+            string hours = "H",
+            string days = "D",
+            string weeks = "W",
+            string months = "MO",
+            string years = "Y"
         ) {
-            Years = string.IsNullOrWhiteSpace(years) ? null : years;
-            Months = string.IsNullOrWhiteSpace(months) ? null : months;
-            Weeks = string.IsNullOrWhiteSpace(weeks) ? null : weeks;
-            Days = string.IsNullOrWhiteSpace(days) ? null : days;
-            Hours = string.IsNullOrWhiteSpace(hours) ? null : hours;
-            Minutes = string.IsNullOrWhiteSpace(minutes) ? null : minutes;
-            Seconds = string.IsNullOrWhiteSpace(seconds) ? null : seconds;
             Milliseconds = string.IsNullOrWhiteSpace(milliseconds) ? null : milliseconds;
+            Seconds = string.IsNullOrWhiteSpace(seconds) ? null : seconds;
+            Minutes = string.IsNullOrWhiteSpace(minutes) ? null : minutes;
+            Hours = string.IsNullOrWhiteSpace(hours) ? null : hours;
+            Days = string.IsNullOrWhiteSpace(days) ? null : days;
+            Weeks = string.IsNullOrWhiteSpace(weeks) ? null : weeks;
+            Months = string.IsNullOrWhiteSpace(months) ? null : months;
+            Years = string.IsNullOrWhiteSpace(years) ? null : years;
+
+            var timeSpanUnits = new[] { Milliseconds, Seconds, Minutes, Hours, Days, Weeks };
+            if (timeSpanUnits.All(x => x == null)) {
+                throw new ArgumentException(Resources.Error_AtLeastOneTimeSpanUnitIsRequired);
+            }
         }
 
     }

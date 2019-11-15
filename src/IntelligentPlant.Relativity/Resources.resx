@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Error_AtLeastOneTimeSpanUnitIsRequired" xml:space="preserve">
+    <value>At least one of the following units must be specified: milliseconds, seconds, minutes, hours, days, weeks</value>
+  </data>
   <data name="Error_CannotReplaceInvariantCultureParser" xml:space="preserve">
     <value>The parser for the invariant culture cannot be replaced.</value>
   </data>
