@@ -3,7 +3,7 @@
 namespace IntelligentPlant.Relativity.Example {
     class Program {
 
-        private const string OutputDateFormat = "dd-MMM-yy HH:mm:ss.fffZ";
+        private const string OutputDateFormat = "dd-MMM-yy HH:mm:ss.fff";
 
         private static readonly string[] ExampleDates = {
             "NOW-1h",
@@ -14,7 +14,6 @@ namespace IntelligentPlant.Relativity.Example {
             "MONTH-3MO",
             "Week-4d",
             "MINUTE-15m"
-            //"KUUKAUSI"
         };
 
 
@@ -24,7 +23,7 @@ namespace IntelligentPlant.Relativity.Example {
             }
 
             foreach (var item in ExampleDates) {
-                Console.WriteLine($"[{item}] => {parser.ToUtcDateTime(item).ToString(OutputDateFormat)}");
+                Console.WriteLine($"[{item}] => {TimeZoneInfo.ConvertTimeFromUtc(parser.ToUtcDateTime(item), TimeZoneInfo.Local).ToString(OutputDateFormat)} {TimeZoneInfo.Local.DisplayName}");
             }
         }
 
