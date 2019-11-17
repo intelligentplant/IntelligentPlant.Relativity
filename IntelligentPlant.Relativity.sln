@@ -11,9 +11,21 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{45E99843-3
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntelligentPlant.Relativity", "src\IntelligentPlant.Relativity\IntelligentPlant.Relativity.csproj", "{76666543-5A66-4D6C-AC49-1F7C251B823F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntelligentPlant.Relativity.Example", "examples\IntelligentPlant.Relativity.Example\IntelligentPlant.Relativity.Example.csproj", "{1E455112-04D3-4222-B2BE-90EF9E1B6061}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntelligentPlant.Relativity.Example", "examples\IntelligentPlant.Relativity.Example\IntelligentPlant.Relativity.Example.csproj", "{1E455112-04D3-4222-B2BE-90EF9E1B6061}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntelligentPlant.Relativity.Test", "test\IntelligentPlant.Relativity.Test\IntelligentPlant.Relativity.Test.csproj", "{8A2958F6-9128-4A82-B1B0-B1ACCEB33D18}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntelligentPlant.Relativity.Test", "test\IntelligentPlant.Relativity.Test\IntelligentPlant.Relativity.Test.csproj", "{8A2958F6-9128-4A82-B1B0-B1ACCEB33D18}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "misc", "misc", "{072551EE-CB29-4F5C-90BC-C3D1C968229D}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		build.ps1 = build.ps1
+		Directory.Build.props = Directory.Build.props
+		Directory.Build.targets = Directory.Build.targets
+		LICENSE = LICENSE
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -170,7 +170,7 @@ namespace IntelligentPlant.Relativity {
                     "|",
                     timeOffsets.Select(x => EscapeRegexSpecialCharacters(x))
                 ),
-                @"))",
+                @")",
                 fractionalTimeOffsets.Length == 0
                     ? string.Empty
                     : string.Concat(
@@ -184,7 +184,7 @@ namespace IntelligentPlant.Relativity {
                         ),
                         @"))"
                     ),
-                @")?\s*$"
+                @"))?\s*$"
             );
             _relativeDateTimeRegex = new Regex(RelativeTimestampRegexPattern, RegexOptions.IgnoreCase);
         }
@@ -902,9 +902,9 @@ namespace IntelligentPlant.Relativity {
         /// <param name="quantity">
         ///   The time unit quantity.
         /// </param>
-        private void GetTimeSpanUnitAndCount(Match timeSpanMatch, out string unit, out int quantity) {
+        private void GetTimeSpanUnitAndCount(Match timeSpanMatch, out string unit, out double quantity) {
             unit = timeSpanMatch.Groups["unit"].Value;
-            quantity = Convert.ToInt32(timeSpanMatch.Groups["count"].Value, CultureInfo);
+            quantity = Convert.ToDouble(timeSpanMatch.Groups["count"].Value, CultureInfo);
         }
 
 
@@ -921,22 +921,22 @@ namespace IntelligentPlant.Relativity {
             GetTimeSpanUnitAndCount(match, out var unit, out var count);
 
             if (string.Equals(unit, TimeOffset.Weeks, StringComparison.OrdinalIgnoreCase)) {
-                return TimeSpan.FromTicks(TimeSpan.TicksPerDay * 7 * count);
+                return TimeSpan.FromTicks((long) (TimeSpan.TicksPerDay * 7 * count));
             }
             if (string.Equals(unit, TimeOffset.Days, StringComparison.OrdinalIgnoreCase)) {
-                return TimeSpan.FromTicks(TimeSpan.TicksPerDay * count);
+                return TimeSpan.FromTicks((long) (TimeSpan.TicksPerDay * count));
             }
             if (string.Equals(unit, TimeOffset.Hours, StringComparison.OrdinalIgnoreCase)) {
-                return TimeSpan.FromTicks(TimeSpan.TicksPerHour * count);
+                return TimeSpan.FromTicks((long) (TimeSpan.TicksPerHour * count));
             }
             if (string.Equals(unit, TimeOffset.Minutes, StringComparison.OrdinalIgnoreCase)) {
-                return TimeSpan.FromTicks(TimeSpan.TicksPerMinute * count);
+                return TimeSpan.FromTicks((long) (TimeSpan.TicksPerMinute * count));
             }
             if (string.Equals(unit, TimeOffset.Seconds, StringComparison.OrdinalIgnoreCase)) {
-                return TimeSpan.FromTicks(TimeSpan.TicksPerSecond* count);
+                return TimeSpan.FromTicks((long) (TimeSpan.TicksPerSecond * count));
             }
             if (string.Equals(unit, TimeOffset.Milliseconds, StringComparison.OrdinalIgnoreCase)) {
-                return TimeSpan.FromTicks(TimeSpan.TicksPerMillisecond * count);
+                return TimeSpan.FromTicks((long) (TimeSpan.TicksPerMillisecond * count));
             }
 
             return TimeSpan.Zero;

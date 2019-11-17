@@ -1,11 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq.Expressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace IntelligentPlant.Relativity.Test {
     [TestClass]
     public class DateTimeParsingTests {
+
+        private string GetOffsetExpression(RelativityParser parser, double quantity, Expression<Func<RelativityTimeOffsetSettings, string>> units) {
+            var unitExpr = units.Compile().Invoke(parser.TimeOffset);
+            var expr = $"{quantity.ToString(parser.CultureInfo)}{unitExpr}";
+            return quantity < 0
+                ? expr
+                : "+" + expr;
+        }
+
 
         private void DateTimeParseTest(RelativityParser parser, string dateString, TimeZoneInfo timeZone, Action<string, DateTime> validator, bool convertBackToInputTimeZone) {
             if (!parser.TryConvertToUtcDateTime(dateString, out var dt, timeZone)) {
@@ -163,27 +173,51 @@ namespace IntelligentPlant.Relativity.Test {
 
             var tests = new Dictionary<string, Action<string, DateTime>>() {
                 {
-                    "-800ms",
+                    GetOffsetExpression(parser, -800, p => p.Milliseconds),
                     (summary, dt) => {
                         Assert.AreEqual(800, (DateTime.Now - dt).TotalMilliseconds, 100);
                     }
                 },
                 {
-                    "+567ms",
+                    GetOffsetExpression(parser, 567, p => p.Milliseconds),
                     (summary, dt) => {
                         Assert.AreEqual(567, (dt - DateTime.Now).TotalMilliseconds, 100);
                     }
                 },
                 {
-                    "-5s",
+                    GetOffsetExpression(parser, -5, p => p.Seconds),
                     (summary, dt) => {
                         Assert.AreEqual(5, (DateTime.Now - dt).TotalSeconds, 0.1);
                     }
                 },
                 {
-                    "+10s",
+                    GetOffsetExpression(parser, 10, p => p.Seconds),
                     (summary, dt) => {
                         Assert.AreEqual(10, (dt - DateTime.Now).TotalSeconds, 0.1);
+                    }
+                },
+                {
+                    GetOffsetExpression(parser, 10.424, p => p.Minutes),
+                    (summary, dt) => {
+                        Assert.AreEqual(10.424, (dt - DateTime.Now).TotalMinutes, 0.01);
+                    }
+                },
+                {
+                    GetOffsetExpression(parser, -123, p => p.Minutes),
+                    (summary, dt) => {
+                        Assert.AreEqual(123, (DateTime.Now - dt).TotalMinutes, 0.01);
+                    }
+                },
+                {
+                    GetOffsetExpression(parser, 887.134662, p => p.Hours),
+                    (summary, dt) => {
+                        Assert.AreEqual(887.134662, (dt - DateTime.Now).TotalHours, 0.001);
+                    }
+                },
+                {
+                    GetOffsetExpression(parser, -12345.6789, p => p.Hours),
+                    (summary, dt) => {
+                        Assert.AreEqual(12345.6789, (DateTime.Now - dt).TotalHours, 0.001);
                     }
                 },
 
