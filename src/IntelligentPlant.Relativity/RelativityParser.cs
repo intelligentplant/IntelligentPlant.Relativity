@@ -261,79 +261,103 @@ namespace IntelligentPlant.Relativity {
 
 
         /// <summary>
-        /// Gets the registered <see cref="RelativityParser"/> for the specified culture. If a 
-        /// matching parser is not found, <see cref="Default"/> will be returned.
+        /// Tries to retrieve the registered <see cref="RelativityParser"/> for the specified 
+        /// culture. If a parser exists for a parent culture of the requested culture (e.g. the 
+        /// requested culture is <c>en-GB</c> and a parser exists for <c>en</c>), a new parser 
+        /// for the requested culture will be created and cached, using the settings from the 
+        /// parent culture.
         /// </summary>
         /// <param name="cultureInfo">
-        ///   The culture.
+        ///   The culture. Specifying <see langword="null"/> or <see cref="CultureInfo.InvariantCulture"/> 
+        ///   will return the default <paramref name="parser"/>.
+        /// </param>
+        /// <param name="parser">
+        ///   The <see cref="RelativityParser"/> for the culture.
         /// </param>
         /// <returns>
-        ///   The <see cref="RelativityParser"/> for the culture.
+        ///   <see langword="true"/> if a parser was found or created for the culture, or 
+        ///   <see langword="false"/> otherwise.
         /// </returns>
-        public static RelativityParser GetParser(CultureInfo cultureInfo) {
-            if (cultureInfo == null) {
-                return Default;
+        public static bool TryGetParser(CultureInfo cultureInfo, out RelativityParser parser) {
+            if (cultureInfo == null || string.Equals(cultureInfo.Name, CultureInfo.InvariantCulture.Name, StringComparison.OrdinalIgnoreCase)) {
+                parser = Default;
+                return true;
             }
 
             var ci = cultureInfo;
 
             while (true) { 
-                if (ci == null) {
+                if (ci == null || string.Equals(cultureInfo.Name, CultureInfo.InvariantCulture.Name, StringComparison.OrdinalIgnoreCase)) {
                     break;
                 }
 
-                if (s_parserInstances.TryGetValue(ci.Name, out var parser)) {
-                    if (!string.Equals(ci.Name, cultureInfo.Name, StringComparison.OrdinalIgnoreCase) &&
-                        !string.Equals(ci.Name, CultureInfo.InvariantCulture.Name, StringComparison.OrdinalIgnoreCase)) {
+                if (s_parserInstances.TryGetValue(ci.Name, out var p)) {
+                    if (!string.Equals(ci.Name, cultureInfo.Name, StringComparison.OrdinalIgnoreCase)) {
                         // We have found an entry for a parent culture of the one that was originally 
                         // requested (e.g. "en" instead of "en-GB"). We'll create and return a cached 
                         // entry for the specific culture that was requested, in case e.g. the 
                         // specific culture uses a different first day of week to the parent culture.
-                        //
-                        // Note that we don't create the cached entry if the culture we found was 
-                        // the invariant culture.
-                        return s_parserInstances.GetOrAdd(cultureInfo.Name, key => new RelativityParser(cultureInfo, parser.BaseTime, parser.TimeOffset));
+                        parser = s_parserInstances.GetOrAdd(cultureInfo.Name, key => new RelativityParser(cultureInfo, p.BaseTime, p.TimeOffset));
+                        return true;
                     }
 
                     // We found an exact match for the requested culture, or we are returning the 
                     // parser for the invariant culture.
-                    return parser;
+                    parser = p;
+                    return true;
                 }
 
                 ci = ci.Parent;
             }
 
-            return Default;
+            parser = null;
+            return false;
         }
 
 
         /// <summary>
-        /// Gets the registered <see cref="RelativityParser"/> for the specified culture. If a 
-        /// matching parser is not found, <see cref="Default"/> will be returned.
+        /// Tries to retrieve the registered <see cref="RelativityParser"/> for the specified 
+        /// culture. If a parser exists for a parent culture of the requested culture (e.g. the 
+        /// requested culture is <c>en-GB</c> and a parser exists for <c>en</c>), a new parser 
+        /// for the requested culture will be created and cached, using the settings from the 
+        /// parent culture.
         /// </summary>
         /// <param name="cultureName">
-        ///   The culture name, in <c>languagecode2-country/regioncode2</c> format (e.g. <c>en-GB</c>).
+        ///   The culture name, in <c>languagecode2-country/regioncode2</c> format (e.g. <c>en-GB</c>). 
+        ///   Specifying <see langword="null"/> or while space will return the default 
+        ///   <paramref name="parser"/>.
+        /// </param>
+        /// <param name="parser">
+        ///   The <see cref="RelativityParser"/> for the culture.
         /// </param>
         /// <returns>
-        ///   The <see cref="RelativityParser"/> for the culture.
+        ///   <see langword="true"/> if a parser was found or created for the culture, or 
+        ///   <see langword="false"/> otherwise.
         /// </returns>
-        public static RelativityParser GetParser(string cultureName) {
-            return GetParser(string.IsNullOrWhiteSpace(cultureName) ? null : CultureInfo.GetCultureInfo(cultureName));
+        public static bool TryGetParser(string cultureName, out RelativityParser parser) {
+            return TryGetParser(string.IsNullOrWhiteSpace(cultureName) ? null : CultureInfo.GetCultureInfo(cultureName), out parser);
         }
 
 
         /// <summary>
-        /// Gets the registered <see cref="RelativityParser"/> for the specified culture. If a 
-        /// matching parser is not found, <see cref="Default"/> will be returned.
+        /// Tries to retrieve the registered <see cref="RelativityParser"/> for the specified 
+        /// culture. If a parser exists for a parent culture of the requested culture (e.g. the 
+        /// requested culture is <c>en-GB</c> and a parser exists for <c>en</c>), a new parser 
+        /// for the requested culture will be created and cached, using the settings from the 
+        /// parent culture.
         /// </summary>
         /// <param name="lcid">
         ///   A locale identifier (LCID).
         /// </param>
-        /// <returns>
+        /// <param name="parser">
         ///   The <see cref="RelativityParser"/> for the culture.
+        /// </param>
+        /// <returns>
+        ///   <see langword="true"/> if a parser was found or created for the culture, or 
+        ///   <see langword="false"/> otherwise.
         /// </returns>
-        public static RelativityParser GetParser(int lcid) {
-            return GetParser(CultureInfo.GetCultureInfo(lcid));
+        public static bool TryGetParser(int lcid, out RelativityParser parser) {
+            return TryGetParser(CultureInfo.GetCultureInfo(lcid), out parser);
         }
 
 
@@ -354,13 +378,21 @@ namespace IntelligentPlant.Relativity {
         /// <param name="parser">
         ///   The parser.
         /// </param>
+        /// <param name="replaceExisting">
+        ///   When <see langword="true"/>, an existing entry for the same culture will be replaced. 
+        ///   Note that the <see cref="CultureInfo.InvariantCulture"/> parser cannot be replaced.
+        /// </param>
+        /// <returns>
+        ///   <see langword="true"/> if the parser was registered, or <see langword="false"/> 
+        ///   otherwise.
+        /// </returns>
         /// <exception cref="ArgumentNullException">
         ///   <paramref name="parser"/> is <see langword="null"/>.
         /// </exception>
         /// <exception cref="ArgumentException">
         ///   The <see cref="CultureInfo"/> for the <paramref name="parser"/> is <see cref="CultureInfo.InvariantCulture"/>.
         /// </exception>
-        public static void RegisterParser(RelativityParser parser) {
+        public static bool TryRegisterParser(RelativityParser parser, bool replaceExisting = false) {
             if (parser == null) {
                 throw new ArgumentNullException(nameof(parser));
             }
@@ -368,7 +400,20 @@ namespace IntelligentPlant.Relativity {
                 throw new ArgumentException(Resources.Error_CannotReplaceInvariantCultureParser, nameof(parser));
             }
 
-            s_parserInstances[parser.CultureInfo.Name] = parser;
+            var added = false;
+
+            s_parserInstances.AddOrUpdate(parser.CultureInfo.Name, key => {
+                added = true;
+                return parser;
+            }, (key, existing) => {
+                if (replaceExisting) {
+                    added = true;
+                    return parser;
+                }
+                return existing;
+            });
+
+            return added;
         }
 
 

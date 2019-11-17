@@ -33,7 +33,13 @@ namespace IntelligentPlant.Relativity.Test {
         [DataRow("en-GB")]
         [DataRow("fi-FI")]
         public void BaseRelativeDateTimeShouldBeParsed(string culture) {
-            var parser = RelativityParser.GetParser(culture);
+            Assert.IsTrue(RelativityParser.TryGetParser(culture, out var parser));
+            if (string.IsNullOrWhiteSpace(culture)) {
+                Assert.AreEqual(CultureInfo.InvariantCulture.Name, parser.CultureInfo.Name);
+            }
+            else {
+                Assert.AreEqual(culture, parser.CultureInfo.Name);
+            }
 
             var tests = new Dictionary<string, Action<string, DateTime>>() {
                 {
@@ -147,7 +153,13 @@ namespace IntelligentPlant.Relativity.Test {
         [DataRow("en-GB")]
         [DataRow("fi-FI")]
         public void RelativeDateTimeWithOffsetFromCurrentTimeShouldBeParsed(string culture) {
-            var parser = RelativityParser.GetParser(culture);
+            Assert.IsTrue(RelativityParser.TryGetParser(culture, out var parser));
+            if (string.IsNullOrWhiteSpace(culture)) {
+                Assert.AreEqual(CultureInfo.InvariantCulture.Name, parser.CultureInfo.Name);
+            }
+            else {
+                Assert.AreEqual(culture, parser.CultureInfo.Name);
+            }
 
             var tests = new Dictionary<string, Action<string, DateTime>>() {
                 {

@@ -7,14 +7,16 @@ A C# library for converting absolute and relative timestamp strings into `DateTi
 
 Conversion is performed using the [RelativityParser](./src/IntelligentPlant.Relativity/RelativityParser.cs) class.
 
-The default parser instance (which uses `CultureInfo.InvariantCulture` when parsing) is accessed using the static `RelativityParser.Default` property. Alternatively, you can use one of the `GetParser` method overloads to try and retrieve the parser for a specific culture:
+The default parser instance (which uses `CultureInfo.InvariantCulture` when parsing) is accessed using the static `RelativityParser.Default` property. Alternatively, you can use one of the `TryGetParser` method overloads to try and retrieve the parser for a specific culture:
 
 ```csharp
-var enGB = RelativityParser.GetParser("en-GB");
-var fiFI = RelativityParser.GetParser("fi-FI");
+var successEnGB = RelativityParser.TryGetParser("en-GB", our var enGB);
+var successFiFI = RelativityParser.TryGetParser("fi-FI", out var fiFI);
 ```
 
-If a parser is not registered for a given culture (or any of its parent cultures), it will fall back to using `RelativityParser.Default`. If a parser exists for a parent culture but not the requested culture (e.g. a registration exists for `en` but not `en-GB`), a new entry will be added to the parser list for the more-specific culture that uses the same parser settings but a different `CultureInfo` to the entry for the parent culture.
+If a parser is not registered for a given culture (or any of its parent cultures), you can use use `RelativityParser.Default`, or you can create and register a new parser for the culture using the static `TryRegisterParser` method. See below for more details. Registered parser instances are cached for re-use. 
+
+If a parser exists for a parent culture but not the requested culture (e.g. a registration exists for `en` but not `en-GB`), a new entry will be added to the parser list for the more-specific culture that uses the same parser settings but a different `CultureInfo` to the entry for the parent culture.
 
 
 # Parsing Timestamps
@@ -84,7 +86,7 @@ Examples:
 
 # Registering Parsers
 
-To register a parser for a given culture, call the static `RelativityParser.RegisterParser` method. This will replace any existing registration for the parser's culture:
+To register a parser for a given culture, call the static `RelativityParser.TryRegisterParser` method:
 
 ```csharp
 var fiFI = new RelativityParser(
@@ -111,7 +113,13 @@ var fiFI = new RelativityParser(
     )
 );
 
-RelativityParser.RegisterParser(fiFI);
+var success = RelativityParser.TryRegisterParser(fiFI);
+```
+
+By default, existing parser registrations are not overwritten. To force registration, specify a value for the `replaceExisting` parameter:
+
+```csharp
+var success = RelativityParser.TryRegisterParser(fiFI, replaceExisting: true);
 ```
 
 Note that the default (invariant culture) parser cannot be replaced.
