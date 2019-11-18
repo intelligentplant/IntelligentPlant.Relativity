@@ -42,7 +42,7 @@ param(
 
 Set-StrictMode -Version 2
 $ErrorActionPreference = 'Stop'
-$SolutionFile = "$PSScriptRoot/RENAME-ME.sln"
+$SolutionFile = "$PSScriptRoot/IntelligentPlant.Relativity.sln"
 $Artifacts = "$PSScriptRoot/artifacts"
 
 if ($Help) {
