@@ -26,7 +26,11 @@ namespace IntelligentPlant.Relativity {
         /// <summary>
         /// Registered parser instances.
         /// </summary>
-        private static readonly ConcurrentDictionary<string, RelativityParser> s_parserInstances = new ConcurrentDictionary<string, RelativityParser>(StringComparer.OrdinalIgnoreCase);
+        private static readonly Lazy<ConcurrentDictionary<string, RelativityParser>> s_parserInstances = new Lazy<ConcurrentDictionary<string, RelativityParser>>(() => {
+            var result = new ConcurrentDictionary<string, RelativityParser>(StringComparer.OrdinalIgnoreCase);
+            LoadDefaultParsers(result);
+            return result;
+        }, System.Threading.LazyThreadSafetyMode.ExecutionAndPublication);
 
         /// <summary>
         /// The default parser. Uses <see cref="CultureInfo.InvariantCulture"/> for parsing. 
@@ -71,14 +75,6 @@ namespace IntelligentPlant.Relativity {
         /// The regular expression for parsing relative timestamps.
         /// </summary>
         private Regex _relativeDateTimeRegex;
-
-
-        /// <summary>
-        /// Class initializer.
-        /// </summary>
-        static RelativityParser() {
-            LoadDefaultParsers();
-        }
 
 
         /// <summary>
@@ -194,10 +190,21 @@ namespace IntelligentPlant.Relativity {
         /// Loads cached parser instances for cultures specified in the <see cref="SettingsFileName"/> 
         /// embedded CSV file.
         /// </summary>
-        private static void LoadDefaultParsers() {
+        /// <param name="parserDictionary">
+        ///   The dictionary to load the parsers into.
+        /// </param>
+        private static void LoadDefaultParsers(IDictionary<string, RelativityParser> parserDictionary) {
             using (var reader = new System.IO.StreamReader(typeof(RelativityParser).Assembly.GetManifestResourceStream(typeof(RelativityParser), SettingsFileName))) {
-                // Skip header.
-                reader.ReadLine();
+                while (!reader.EndOfStream) {
+                    // Skip initial comments.
+                    var row = reader.ReadLine();
+                    if (string.IsNullOrWhiteSpace(row) || row.StartsWith("#", StringComparison.Ordinal)) {
+                        continue;
+                    }
+
+                    // We've just read the header.
+                    break;
+                }
 
                 while (!reader.EndOfStream) {
                     var row = reader.ReadLine();
@@ -252,11 +259,11 @@ namespace IntelligentPlant.Relativity {
                         )
                     );
 
-                    s_parserInstances[parser.CultureInfo.Name] = parser;
+                    parserDictionary[parser.CultureInfo.Name] = parser;
                 }
             }
 
-            s_parserInstances[Default.CultureInfo.Name] = Default;
+            parserDictionary[Default.CultureInfo.Name] = Default;
         }
 
 
@@ -291,13 +298,13 @@ namespace IntelligentPlant.Relativity {
                     break;
                 }
 
-                if (s_parserInstances.TryGetValue(ci.Name, out var p)) {
+                if (s_parserInstances.Value.TryGetValue(ci.Name, out var p)) {
                     if (!string.Equals(ci.Name, cultureInfo.Name, StringComparison.OrdinalIgnoreCase)) {
                         // We have found an entry for a parent culture of the one that was originally 
                         // requested (e.g. "en" instead of "en-GB"). We'll create and return a cached 
                         // entry for the specific culture that was requested, in case e.g. the 
                         // specific culture uses a different first day of week to the parent culture.
-                        parser = s_parserInstances.GetOrAdd(cultureInfo.Name, key => new RelativityParser(cultureInfo, p.BaseTime, p.TimeOffset));
+                        parser = s_parserInstances.Value.GetOrAdd(cultureInfo.Name, key => new RelativityParser(cultureInfo, p.BaseTime, p.TimeOffset));
                         return true;
                     }
 
@@ -368,7 +375,7 @@ namespace IntelligentPlant.Relativity {
         ///   The registered culture identifiers.
         /// </returns>
         public static IEnumerable<string> GetAvailableCultures() {
-            return s_parserInstances.Keys.OrderBy(x => x).ToArray();
+            return s_parserInstances.Value.Keys.OrderBy(x => x).ToArray();
         }
 
 
@@ -402,7 +409,7 @@ namespace IntelligentPlant.Relativity {
 
             var added = false;
 
-            s_parserInstances.AddOrUpdate(parser.CultureInfo.Name, key => {
+            s_parserInstances.Value.AddOrUpdate(parser.CultureInfo.Name, key => {
                 added = true;
                 return parser;
             }, (key, existing) => {

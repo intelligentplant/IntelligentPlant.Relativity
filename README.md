@@ -86,7 +86,9 @@ Examples:
 
 # Registering Parsers
 
-To register a parser for a given culture, call the static `RelativityParser.TryRegisterParser` method:
+A default set of parsers are registered during the first call to the static `RelativityParser.GetAvailableCultures`, `RelativityParser.TryGetParser`, and `RelativityParser.TryRegisterParser` methods. The [Settings.csv](./src/IntelligentPlant.Relativity/Settings.csv) file defines the cultures and keywords that are automatically registered.
+
+To register a non-default parser for a given culture, call the static `RelativityParser.TryRegisterParser` method:
 
 ```csharp
 var fiFI = new RelativityParser(
