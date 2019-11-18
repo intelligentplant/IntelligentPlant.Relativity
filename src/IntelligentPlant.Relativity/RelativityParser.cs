@@ -5,6 +5,8 @@ using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 
+[assembly: System.Resources.NeutralResourcesLanguage("en")]
+
 namespace IntelligentPlant.Relativity {
 
     /// <summary>
@@ -113,12 +115,22 @@ namespace IntelligentPlant.Relativity {
             }.Where(x => x != null).ToArray();
 
             DurationRegexPattern = string.Concat(
-                @"^\s*(?<count>[0-9]+)\s*(?<unit>",
+                @"^\s*(?:(?:",
+                @"(?<count>[0-9]+)\s*(?<unit>",
                 string.Join(
                     "|",
                     timeSpanUnits.Select(x => EscapeRegexSpecialCharacters(x))
                 ),
-                @")\s*$"
+                @")",
+                @")|(?:",
+                @"(?<count>[0-9]+",
+                EscapeRegexSpecialCharacters(CultureInfo.NumberFormat?.NumberDecimalSeparator ?? CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator),
+                @"[0-9]+)\s*(?<unit>",
+                string.Join(
+                    "|",
+                    timeSpanUnits.Select(x => EscapeRegexSpecialCharacters(x))
+                ),
+                @")))\s*$"
             );
             _timeSpanRegex = new Regex(DurationRegexPattern, RegexOptions.IgnoreCase);
 
@@ -146,6 +158,7 @@ namespace IntelligentPlant.Relativity {
             }.ToArray();
 
             var fractionalTimeOffsets = new[] {
+                TimeOffset.Weeks,
                 TimeOffset.Days,
                 TimeOffset.Hours,
                 TimeOffset.Minutes,
@@ -441,13 +454,13 @@ namespace IntelligentPlant.Relativity {
 
         #region [ DateTime Parsing ]
 
-        // <summary>
+        /// <summary>
         /// Determines whether a string is a relative time stamp.
         /// </summary>
-        /// <param name="s">
+        /// <param name="dateString">
         ///   The string.
         /// </param>
-        /// <param name="m">
+        /// <param name="match">
         ///   A regular expression match for the string.
         /// </param>
         /// <returns>
@@ -489,9 +502,6 @@ namespace IntelligentPlant.Relativity {
         /// </summary>
         /// <param name="dateString">
         ///   The string.
-        /// </param>
-        /// <param name="formatProvider">
-        ///   An <see cref="IFormatProvider"/> to use when parsing the string.
         /// </param>
         /// <param name="dateTimeStyle">
         ///   A <see cref="DateTimeStyles"/> instance specifying flags to use while parsing dates.
@@ -634,10 +644,9 @@ namespace IntelligentPlant.Relativity {
                     : baseDate.AddMonths(-1 * wholeQuantity);
             }
             if (string.Equals(unit, TimeOffset.Weeks, StringComparison.OrdinalIgnoreCase)) {
-                var wholeQuantity = Convert.ToInt32(quantity);
                 return add
-                    ? baseDate.AddDays(7 * wholeQuantity)
-                    : baseDate.AddYears(-7 * wholeQuantity);
+                    ? baseDate.AddDays(7 * quantity)
+                    : baseDate.AddDays(-7 * quantity);
             }
             if (string.Equals(unit, TimeOffset.Days, StringComparison.OrdinalIgnoreCase)) {
                 return add
@@ -967,8 +976,8 @@ namespace IntelligentPlant.Relativity {
         ///   <see cref="TimeSpan.TryParse(string, IFormatProvider, out TimeSpan)"/> method. This 
         ///   ensures that standard time span literals (e.g. <c>"365.00:00:00"</c>) are parsed in 
         ///   the standard way. If the string cannot be parsed in this way, it is tested to see if 
-        ///   it is in the format <c>[duration][unit]</c>, where <c>[duration]</c> is a whole 
-        ///   number greater than or equal to zero and <c>[unit]</c> is the unit that the duration 
+        ///   it is in the format <c>[duration][unit]</c>, where <c>[duration]</c> is a number 
+        ///   greater than or equal to zero and <c>[unit]</c> is the unit that the duration 
         ///   is measured in.
         /// </remarks>
         public TimeSpan ToTimeSpan(string timeSpanString) {

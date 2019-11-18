@@ -5,20 +5,175 @@ using System.Linq.Expressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace IntelligentPlant.Relativity.Test {
+
     [TestClass]
     public class DateTimeParsingTests {
 
-        private string GetOffsetExpression(RelativityParser parser, double quantity, Expression<Func<RelativityTimeOffsetSettings, string>> units) {
+        private string GetDuration(RelativityParser parser, double quantity, Expression<Func<RelativityTimeOffsetSettings, string>> units) {
             var unitExpr = units.Compile().Invoke(parser.TimeOffset);
-            var expr = $"{quantity.ToString(parser.CultureInfo)}{unitExpr}";
-            return quantity < 0
-                ? expr
-                : "+" + expr;
+            return $"{quantity.ToString(parser.CultureInfo)}{unitExpr}";
         }
 
 
-        private void DateTimeParseTest(RelativityParser parser, string dateString, TimeZoneInfo timeZone, Action<string, DateTime> validator, bool convertBackToInputTimeZone) {
-            if (!parser.TryConvertToUtcDateTime(dateString, out var dt, timeZone)) {
+        private string GetRelativeExpression(RelativityParser parser, string baseTime, double quantity, Expression<Func<RelativityTimeOffsetSettings, string>> units) {
+            var duration = GetDuration(parser, quantity, units);
+            return quantity < 0
+                ? baseTime + duration
+                : baseTime + "+" + duration;
+        }
+
+
+        private DateTime GetBaseTime(DateTime now, string baseTimeType, DayOfWeek firstDayOfWeek) {
+            switch (baseTimeType) {
+                case nameof(RelativityBaseTimeSettings.Now):
+                case nameof(RelativityBaseTimeSettings.NowAlt):
+                    return now;
+                case nameof(RelativityBaseTimeSettings.CurrentSecond):
+                    return new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Kind);
+                case nameof(RelativityBaseTimeSettings.CurrentMinute):
+                    return new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, 0, 0, now.Kind);
+                case nameof(RelativityBaseTimeSettings.CurrentHour):
+                    return new DateTime(now.Year, now.Month, now.Day, now.Hour, 0, 0, 0, now.Kind);
+                case nameof(RelativityBaseTimeSettings.CurrentDay):
+                    return new DateTime(now.Year, now.Month, now.Day, 0, 0, 0, 0, now.Kind);
+                case nameof(RelativityBaseTimeSettings.CurrentWeek):
+                    var diff = (7 + (now.DayOfWeek - firstDayOfWeek)) % 7;
+                    var startOfWeekDate = now.AddDays(-1 * diff).Date;
+                    return new DateTime(startOfWeekDate.Year, startOfWeekDate.Month, startOfWeekDate.Day, 0, 0, 0, now.Kind);
+                case nameof(RelativityBaseTimeSettings.CurrentMonth):
+                    return new DateTime(now.Year, now.Month, 1, 0, 0, 0, 0, now.Kind);
+                case nameof(RelativityBaseTimeSettings.CurrentYear):
+                    return new DateTime(now.Year, 1, 1, 0, 0, 0, 0, now.Kind);
+                default:
+                    throw new ArgumentException("Invalid keyword name.", nameof(baseTimeType));
+            }
+        }
+
+
+        private IDictionary<string, Action<DateTime, DateTime>> GetOffsetTests(RelativityParser parser, string baseTimeType) {
+            var baseTimeKeyword = (string) typeof(RelativityBaseTimeSettings).GetProperty(baseTimeType).GetValue(parser.BaseTime);
+            
+            return new Dictionary<string, Action<DateTime, DateTime>>() {
+                {
+                    GetRelativeExpression(parser, baseTimeKeyword, -800, p => p.Milliseconds),
+                    (now, parsed) => {
+                        var baseTime = GetBaseTime(now, baseTimeType, parser.CultureInfo.DateTimeFormat.FirstDayOfWeek);
+                        Assert.AreEqual(800, (baseTime - parsed).TotalMilliseconds);
+                    }
+                },
+                {
+                    GetRelativeExpression(parser, baseTimeKeyword, 567, p => p.Milliseconds),
+                    (now, parsed) => {
+                        var baseTime = GetBaseTime(now, baseTimeType, parser.CultureInfo.DateTimeFormat.FirstDayOfWeek);
+                        Assert.AreEqual(567, (parsed - baseTime).TotalMilliseconds);
+                    }
+                },
+                {
+                    GetRelativeExpression(parser, baseTimeKeyword, -5, p => p.Seconds),
+                    (now, parsed) => {
+                        var baseTime = GetBaseTime(now, baseTimeType, parser.CultureInfo.DateTimeFormat.FirstDayOfWeek);
+                        Assert.AreEqual(5, (baseTime - parsed).TotalSeconds);
+                    }
+                },
+                {
+                    GetRelativeExpression(parser, baseTimeKeyword, 10, p => p.Seconds),
+                    (now, parsed) => {
+                        var baseTime = GetBaseTime(now, baseTimeType, parser.CultureInfo.DateTimeFormat.FirstDayOfWeek);
+                        Assert.AreEqual(10, (parsed - baseTime).TotalSeconds);
+                    }
+                },
+                {
+                    GetRelativeExpression(parser, baseTimeKeyword, 10.424, p => p.Minutes),
+                    (now, parsed) => {
+                        var baseTime = GetBaseTime(now, baseTimeType, parser.CultureInfo.DateTimeFormat.FirstDayOfWeek);
+                        Assert.AreEqual(10.424, (parsed - baseTime).TotalMinutes, 0.001);
+                    }
+                },
+                {
+                    GetRelativeExpression(parser, baseTimeKeyword, -123, p => p.Minutes),
+                    (now, parsed) => {
+                        var baseTime = GetBaseTime(now, baseTimeType, parser.CultureInfo.DateTimeFormat.FirstDayOfWeek);
+                        Assert.AreEqual(123, (baseTime - parsed).TotalMinutes);
+                    }
+                },
+                {
+                    GetRelativeExpression(parser, baseTimeKeyword, 887.134662, p => p.Hours),
+                    (now, parsed) => {
+                        var baseTime = GetBaseTime(now, baseTimeType, parser.CultureInfo.DateTimeFormat.FirstDayOfWeek);
+                        Assert.AreEqual(887.134662, (parsed - baseTime).TotalHours, 0.00001);
+                    }
+                },
+                {
+                    GetRelativeExpression(parser, baseTimeKeyword, -12345.6789, p => p.Hours),
+                    (now, parsed) => {
+                        var baseTime = GetBaseTime(now, baseTimeType, parser.CultureInfo.DateTimeFormat.FirstDayOfWeek);
+                        Assert.AreEqual(12345.6789, (baseTime - parsed).TotalHours, 0.0001);
+                    }
+                },
+                {
+                    GetRelativeExpression(parser, baseTimeKeyword, 3.5, p => p.Days),
+                    (now, parsed) => {
+                        var baseTime = GetBaseTime(now, baseTimeType, parser.CultureInfo.DateTimeFormat.FirstDayOfWeek);
+                        Assert.AreEqual(3.5, (parsed - baseTime).TotalDays);
+                    }
+                },
+                {
+                    GetRelativeExpression(parser, baseTimeKeyword, -1.11665, p => p.Days),
+                    (now, parsed) => {
+                        var baseTime = GetBaseTime(now, baseTimeType, parser.CultureInfo.DateTimeFormat.FirstDayOfWeek);
+                        Assert.AreEqual(1.11665, (baseTime - parsed).TotalDays);
+                    }
+                },
+                {
+                    GetRelativeExpression(parser, baseTimeKeyword, 10, p => p.Weeks),
+                    (now, parsed) => {
+                        var baseTime = GetBaseTime(now, baseTimeType, parser.CultureInfo.DateTimeFormat.FirstDayOfWeek);
+                        Assert.AreEqual(10 * 7, (parsed - baseTime).TotalDays);
+                    }
+                },
+                {
+                    GetRelativeExpression(parser, baseTimeKeyword, -70, p => p.Weeks),
+                    (now, parsed) => {
+                        var baseTime = GetBaseTime(now, baseTimeType, parser.CultureInfo.DateTimeFormat.FirstDayOfWeek);
+                        Assert.AreEqual(70 * 7, (baseTime - parsed).TotalDays);
+                    }
+                },
+                {
+                    GetRelativeExpression(parser, baseTimeKeyword, 9, p => p.Months),
+                    (now, parsed) => {
+                        var baseTime = GetBaseTime(now, baseTimeType, parser.CultureInfo.DateTimeFormat.FirstDayOfWeek);
+                        Assert.IsTrue(baseTime.AddMonths(9) == parsed);
+                    }
+                },
+                {
+                    GetRelativeExpression(parser, baseTimeKeyword, -97, p => p.Months),
+                    (now, parsed) => {
+                        var baseTime = GetBaseTime(now, baseTimeType, parser.CultureInfo.DateTimeFormat.FirstDayOfWeek);
+                        Assert.IsTrue(baseTime.AddMonths(-97) == parsed);
+                    }
+                },
+                {
+                    GetRelativeExpression(parser, baseTimeKeyword, 14, p => p.Years),
+                    (now, parsed) => {
+                        var baseTime = GetBaseTime(now, baseTimeType, parser.CultureInfo.DateTimeFormat.FirstDayOfWeek);
+                        Assert.IsTrue(baseTime.AddYears(14) == parsed);
+                    }
+                },
+                {
+                    GetRelativeExpression(parser, baseTimeKeyword, -12, p => p.Years),
+                    (now, parsed) => {
+                        var baseTime = GetBaseTime(now, baseTimeType, parser.CultureInfo.DateTimeFormat.FirstDayOfWeek);
+                        Assert.IsTrue(baseTime.AddYears(-12) == parsed);
+                    }
+                }
+            };
+        }
+
+
+        private void DateTimeParseTest(RelativityParser parser, string dateString, TimeZoneInfo timeZone, Action<DateTime, DateTime> validator, bool convertBackToInputTimeZone) {
+            var now = timeZone.GetCurrentTime();
+
+            if (!parser.TryConvertToUtcDateTime(dateString, out var dt, timeZone, now)) {
                 Assert.Fail("Not a valid DateTime: {0}", dateString);
             }
 
@@ -33,7 +188,7 @@ namespace IntelligentPlant.Relativity.Test {
             var conversionSummary = $"{dateString} => {dt:dd-MMM-yy HH:mm:ss.fff} {tzDisplayName}";
             System.Diagnostics.Trace.WriteLine(conversionSummary);
 
-            validator(conversionSummary, dt);
+            validator(now, dt);
         }
 
 
@@ -51,102 +206,81 @@ namespace IntelligentPlant.Relativity.Test {
                 Assert.AreEqual(culture, parser.CultureInfo.Name);
             }
 
-            var tests = new Dictionary<string, Action<string, DateTime>>() {
+            var tests = new Dictionary<string, Action<DateTime, DateTime>>() {
                 {
                     parser.BaseTime.NowAlt,
-                    (summary, dt) => Assert.AreEqual(0, (DateTime.Now - dt).TotalSeconds, 0.2)
+                    (now, parsed) => Assert.AreEqual(0, (now - parsed).TotalSeconds)
                 },
                 {
                     parser.BaseTime.Now,
-                    (summary, dt) => Assert.AreEqual(0, (DateTime.Now - dt).TotalSeconds, 0.2)
+                    (now, parsed) => Assert.AreEqual(0, (now - parsed).TotalSeconds)
                 },
                 {
                     parser.BaseTime.CurrentSecond,
-                    (summary, dt) => {
-                        Assert.AreEqual(dt.Millisecond, 0);
-                        // Delta of 2 because it's feasible that the relative timestamp could be 
-                        // parsed just before the start of a new second, and the callback could 
-                        // run just after.
-                        Assert.IsTrue((DateTime.Now - dt).TotalSeconds < 2);
+                    (now, parsed) => {
+                        Assert.AreEqual(parsed.Millisecond, 0);
+                        Assert.IsTrue((now - parsed).TotalSeconds < 1);
                     }
                 },
                 {
                     parser.BaseTime.CurrentMinute,
-                    (summary, dt) => {
-                        Assert.AreEqual(dt.Millisecond, 0);
-                        Assert.AreEqual(dt.Second, 0);
-                        // Delta of 2 because it's feasible that the relative timestamp could be 
-                        // parsed just before the start of a new minute, and the callback could 
-                        // run just after.
-                        Assert.IsTrue((DateTime.Now - dt).TotalMinutes < 2);
+                    (now, parsed) => {
+                        Assert.AreEqual(parsed.Millisecond, 0);
+                        Assert.AreEqual(parsed.Second, 0);
+                        Assert.IsTrue((now - parsed).TotalMinutes < 1);
                     }
                 },
                 {
                     parser.BaseTime.CurrentHour,
-                    (summary, dt) => {
-                        Assert.AreEqual(dt.Millisecond, 0);
-                        Assert.AreEqual(dt.Second, 0);
-                        Assert.AreEqual(dt.Minute, 0);
-                        // Delta of 2 because it's feasible that the relative timestamp could be 
-                        // parsed just before the start of a new hour, and the callback could 
-                        // run just after.
-                        Assert.IsTrue((DateTime.Now - dt).TotalHours < 2);
+                    (now, parsed) => {
+                        Assert.AreEqual(parsed.Millisecond, 0);
+                        Assert.AreEqual(parsed.Second, 0);
+                        Assert.AreEqual(parsed.Minute, 0);
+                        Assert.IsTrue((now - parsed).TotalHours < 1);
                     }
                 },
                 {
                     parser.BaseTime.CurrentDay,
-                    (summary, dt) => {
-                        Assert.AreEqual(dt.Millisecond, 0);
-                        Assert.AreEqual(dt.Second, 0);
-                        Assert.AreEqual(dt.Minute, 0);
-                        Assert.AreEqual(dt.Hour, 0);
-                        // Delta of 2 because it's feasible that the relative timestamp could be 
-                        // parsed just before the start of a new day, and the callback could 
-                        // run just after.
-                        Assert.IsTrue((DateTime.Now - dt).TotalDays < 2);
+                    (now, parsed) => {
+                        Assert.AreEqual(parsed.Millisecond, 0);
+                        Assert.AreEqual(parsed.Second, 0);
+                        Assert.AreEqual(parsed.Minute, 0);
+                        Assert.AreEqual(parsed.Hour, 0);
+                        Assert.IsTrue((now - parsed).TotalDays < 1);
                     }
                 },
                 {
                     parser.BaseTime.CurrentWeek,
-                    (summary, dt) => {
-                        Assert.AreEqual(dt.Millisecond, 0);
-                        Assert.AreEqual(dt.Second, 0);
-                        Assert.AreEqual(dt.Minute, 0);
-                        Assert.AreEqual(dt.Hour, 0);
-                        Assert.AreEqual(dt.DayOfWeek, parser.CultureInfo.DateTimeFormat.FirstDayOfWeek);
-                        // Delta of 8 because it's feasible that the relative timestamp could be 
-                        // parsed just before the start of a new day, and the callback could 
-                        // run just after.
-                        Assert.IsTrue((DateTime.Now - dt).TotalDays < 8);
+                    (now, parsed) => {
+                        Assert.AreEqual(parsed.Millisecond, 0);
+                        Assert.AreEqual(parsed.Second, 0);
+                        Assert.AreEqual(parsed.Minute, 0);
+                        Assert.AreEqual(parsed.Hour, 0);
+                        Assert.AreEqual(parsed.DayOfWeek, parser.CultureInfo.DateTimeFormat.FirstDayOfWeek);
+                        Assert.IsTrue((now - parsed).TotalDays < 7);
                     }
                 },
                 {
                     parser.BaseTime.CurrentMonth,
-                    (summary, dt) => {
-                        Assert.AreEqual(dt.Millisecond, 0);
-                        Assert.AreEqual(dt.Second, 0);
-                        Assert.AreEqual(dt.Minute, 0);
-                        Assert.AreEqual(dt.Hour, 0);
-                        Assert.AreEqual(dt.Day, 1);
-                        // Delta of 32 because it's feasible that the relative timestamp could be 
-                        // parsed just before the start of a new month, and the callback could 
-                        // run just after.
-                        Assert.IsTrue((DateTime.Now - dt).TotalDays < 32);
+                    (now, parsed) => {
+                        Assert.AreEqual(parsed.Millisecond, 0);
+                        Assert.AreEqual(parsed.Second, 0);
+                        Assert.AreEqual(parsed.Minute, 0);
+                        Assert.AreEqual(parsed.Hour, 0);
+                        Assert.AreEqual(parsed.Day, 1);
+                        Assert.IsTrue((now - parsed).TotalDays < 31);
                     }
                 },
                 {
                     parser.BaseTime.CurrentYear,
-                    (summary, dt) => {
-                        Assert.AreEqual(dt.Millisecond, 0);
-                        Assert.AreEqual(dt.Second, 0);
-                        Assert.AreEqual(dt.Minute, 0);
-                        Assert.AreEqual(dt.Hour, 0);
-                        Assert.AreEqual(dt.Day, 1);
-                        Assert.AreEqual(dt.Month, 1);
-                        // Delta of 367 because it's feasible that the relative timestamp could be 
-                        // parsed just before the start of a new year, and the callback could 
-                        // run just after.
-                        Assert.IsTrue((DateTime.Now - dt).TotalDays < 367);
+                    (now, parsed) => {
+                        Assert.AreEqual(parsed.Millisecond, 0);
+                        Assert.AreEqual(parsed.Second, 0);
+                        Assert.AreEqual(parsed.Minute, 0);
+                        Assert.AreEqual(parsed.Hour, 0);
+                        Assert.AreEqual(parsed.Day, 1);
+                        Assert.AreEqual(parsed.Month, 1);
+                        Assert.IsTrue((now - parsed).TotalDays < 366);
                     }
                 }
             };
@@ -162,7 +296,7 @@ namespace IntelligentPlant.Relativity.Test {
         [DataRow("en-US")]
         [DataRow("en-GB")]
         [DataRow("fi-FI")]
-        public void RelativeDateTimeWithOffsetFromCurrentTimeShouldBeParsed(string culture) {
+        public void RelativeDateTimeWithOffsetShouldBeParsed(string culture) {
             Assert.IsTrue(RelativityParser.TryGetParser(culture, out var parser));
             if (string.IsNullOrWhiteSpace(culture)) {
                 Assert.AreEqual(CultureInfo.InvariantCulture.Name, parser.CultureInfo.Name);
@@ -171,61 +305,92 @@ namespace IntelligentPlant.Relativity.Test {
                 Assert.AreEqual(culture, parser.CultureInfo.Name);
             }
 
-            var tests = new Dictionary<string, Action<string, DateTime>>() {
-                {
-                    GetOffsetExpression(parser, -800, p => p.Milliseconds),
-                    (summary, dt) => {
-                        Assert.AreEqual(800, (DateTime.Now - dt).TotalMilliseconds, 100);
-                    }
-                },
-                {
-                    GetOffsetExpression(parser, 567, p => p.Milliseconds),
-                    (summary, dt) => {
-                        Assert.AreEqual(567, (dt - DateTime.Now).TotalMilliseconds, 100);
-                    }
-                },
-                {
-                    GetOffsetExpression(parser, -5, p => p.Seconds),
-                    (summary, dt) => {
-                        Assert.AreEqual(5, (DateTime.Now - dt).TotalSeconds, 0.1);
-                    }
-                },
-                {
-                    GetOffsetExpression(parser, 10, p => p.Seconds),
-                    (summary, dt) => {
-                        Assert.AreEqual(10, (dt - DateTime.Now).TotalSeconds, 0.1);
-                    }
-                },
-                {
-                    GetOffsetExpression(parser, 10.424, p => p.Minutes),
-                    (summary, dt) => {
-                        Assert.AreEqual(10.424, (dt - DateTime.Now).TotalMinutes, 0.01);
-                    }
-                },
-                {
-                    GetOffsetExpression(parser, -123, p => p.Minutes),
-                    (summary, dt) => {
-                        Assert.AreEqual(123, (DateTime.Now - dt).TotalMinutes, 0.01);
-                    }
-                },
-                {
-                    GetOffsetExpression(parser, 887.134662, p => p.Hours),
-                    (summary, dt) => {
-                        Assert.AreEqual(887.134662, (dt - DateTime.Now).TotalHours, 0.001);
-                    }
-                },
-                {
-                    GetOffsetExpression(parser, -12345.6789, p => p.Hours),
-                    (summary, dt) => {
-                        Assert.AreEqual(12345.6789, (DateTime.Now - dt).TotalHours, 0.001);
-                    }
-                },
-
+            var baseTimeTypes = new[] { 
+                nameof(RelativityBaseTimeSettings.Now),
+                nameof(RelativityBaseTimeSettings.NowAlt),
+                nameof(RelativityBaseTimeSettings.CurrentSecond),
+                nameof(RelativityBaseTimeSettings.CurrentMinute),
+                nameof(RelativityBaseTimeSettings.CurrentHour),
+                nameof(RelativityBaseTimeSettings.CurrentDay),
+                nameof(RelativityBaseTimeSettings.CurrentWeek),
+                nameof(RelativityBaseTimeSettings.CurrentMonth),
+                nameof(RelativityBaseTimeSettings.CurrentYear),
             };
 
-            foreach (var item in tests) {
-                DateTimeParseTest(parser, parser.BaseTime.Now + item.Key, TimeZoneInfo.Local, item.Value, true);
+            foreach (var baseTimeType in baseTimeTypes) {
+                var tests = GetOffsetTests(parser, baseTimeType);
+
+                foreach (var item in tests) {
+                    DateTimeParseTest(parser, item.Key, TimeZoneInfo.Local, item.Value, true);
+                }
             }
+        }
+
+
+        [DataTestMethod]
+        [DataRow("")] // Should fall back to invariant culture
+        [DataRow("en-US")]
+        [DataRow("en-GB")]
+        [DataRow("fi-FI")]
+        public void DurationShouldBeParsed(string culture) {
+            Assert.IsTrue(RelativityParser.TryGetParser(culture, out var parser));
+            if (string.IsNullOrWhiteSpace(culture)) {
+                Assert.AreEqual(CultureInfo.InvariantCulture.Name, parser.CultureInfo.Name);
+            }
+            else {
+                Assert.AreEqual(culture, parser.CultureInfo.Name);
+            }
+
+            string unparsed;
+            TimeSpan parsed;
+
+            unparsed = GetDuration(parser, 123, x => x.Milliseconds);
+            parsed = parser.ToTimeSpan(unparsed);
+            Assert.AreEqual(123, parsed.TotalMilliseconds);
+
+            unparsed = GetDuration(parser, 123.456, x => x.Milliseconds);
+            parsed = parser.ToTimeSpan(unparsed);
+            Assert.AreEqual(123.456, parsed.TotalMilliseconds);
+
+            unparsed = GetDuration(parser, 123, x => x.Seconds);
+            parsed = parser.ToTimeSpan(unparsed);
+            Assert.AreEqual(123, parsed.TotalSeconds);
+
+            unparsed = GetDuration(parser, 123.456, x => x.Seconds);
+            parsed = parser.ToTimeSpan(unparsed);
+            Assert.AreEqual(123.456, parsed.TotalSeconds, 0.001);
+
+            unparsed = GetDuration(parser, 123, x => x.Minutes);
+            parsed = parser.ToTimeSpan(unparsed);
+            Assert.AreEqual(123, parsed.TotalMinutes);
+
+            unparsed = GetDuration(parser, 123.456, x => x.Minutes);
+            parsed = parser.ToTimeSpan(unparsed);
+            Assert.AreEqual(123.456, parsed.TotalMinutes);
+
+            unparsed = GetDuration(parser, 123, x => x.Hours);
+            parsed = parser.ToTimeSpan(unparsed);
+            Assert.AreEqual(123, parsed.TotalHours);
+
+            unparsed = GetDuration(parser, 123.456, x => x.Hours);
+            parsed = parser.ToTimeSpan(unparsed);
+            Assert.AreEqual(123.456, parsed.TotalHours, 0.001);
+
+            unparsed = GetDuration(parser, 123, x => x.Days);
+            parsed = parser.ToTimeSpan(unparsed);
+            Assert.AreEqual(123, parsed.TotalDays);
+
+            unparsed = GetDuration(parser, 123.456, x => x.Days);
+            parsed = parser.ToTimeSpan(unparsed);
+            Assert.AreEqual(123.456, parsed.TotalDays, 0.001);
+
+            unparsed = GetDuration(parser, 123, x => x.Weeks);
+            parsed = parser.ToTimeSpan(unparsed);
+            Assert.AreEqual(123 * 7, parsed.TotalDays);
+
+            unparsed = GetDuration(parser, 123.456, x => x.Weeks);
+            parsed = parser.ToTimeSpan(unparsed);
+            Assert.AreEqual(123.456 * 7, parsed.TotalDays);
         }
 
     }

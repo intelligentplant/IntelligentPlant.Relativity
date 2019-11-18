@@ -21,8 +21,8 @@ namespace IntelligentPlant.Relativity {
         public string Months { get; }
 
         /// <summary>
-        /// Weeks. Quanities must be specified using whole numbers. When <see langword="null"/>, 
-        /// this unit cannot be used.
+        /// Weeks. Quanities can be specified using whole or fractional numbers. When 
+        /// <see langword="null"/>, this unit cannot be used.
         /// </summary>
         public string Weeks { get; }
 

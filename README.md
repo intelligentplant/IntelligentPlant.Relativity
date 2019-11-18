@@ -47,7 +47,7 @@ The following units can be used in relative timestamps with the default parser. 
 - `M` - minutes.
 - `H` - hours.
 - `D` - days.
-- `W` - weeks. Fractional quantities are not allowed.
+- `W` - weeks.
 - `MO` - months. Fractional quantities are not allowed.
 - `Y` - years. Fractional quantities are not allowed.
 
@@ -74,7 +74,7 @@ Duration expressions are expressed in the same way as an offset on a relative ti
 - `M` - minutes.
 - `H` - hours.
 - `D` - days.
-- `W` - weeks. Fractional quantities are not allowed.
+- `W` - weeks.
 
 Examples:
 
