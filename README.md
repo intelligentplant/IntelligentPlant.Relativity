@@ -10,7 +10,7 @@ Conversion is performed using the [RelativityParser](./src/IntelligentPlant.Rela
 The default parser instance (which uses `CultureInfo.InvariantCulture` when parsing) is accessed using the static `RelativityParser.Default` property. Alternatively, you can use one of the `TryGetParser` method overloads to try and retrieve the parser for a specific culture:
 
 ```csharp
-var successEnGB = RelativityParser.TryGetParser("en-GB", our var enGB);
+var successEnGB = RelativityParser.TryGetParser("en-GB", out var enGB);
 var successFiFI = RelativityParser.TryGetParser("fi-FI", out var fiFI);
 ```
 
