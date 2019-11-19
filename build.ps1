@@ -23,21 +23,29 @@ Building release packages.
 #>
 [CmdletBinding(PositionalBinding = $false, DefaultParameterSetName='Groups')]
 param(
-    [ValidateSet('Debug', 'Release')]$Configuration,
+    [string]
+    [ValidateSet('Debug', 'Release')]
+    $Configuration,
 
-    [switch]$Clean,
+    [switch]
+    $Clean,
 
-    [switch]$Pack,
+    [switch]
+    $Pack,
 
-    [switch]$Sign,
+    [switch]
+    $Sign,
     
-    [string]$Verbosity = 'minimal',
+    [string]
+    $Verbosity = 'minimal',
 
-    [switch]$Help,
+    [switch]
+    $Help,
 
     # Remaining arguments will be passed to MSBuild directly
     [Parameter(ValueFromRemainingArguments = $true)]
-    [string[]]$MSBuildArguments
+    [string[]]
+    $MSBuildArguments
 )
 
 Set-StrictMode -Version 2
