@@ -3,4 +3,3 @@
 
 Culture,BT_Now,BT_CurrentSecond,BT_CurrentMinute,BT_CurrentHour,BT_CurrentDay,BT_CurrentWeek,BT_CurrentMonth,BT_CurrentYear,TO_Milliseconds,TO_Seconds,TO_Minutes,TO_Hours,TO_Days,TO_Weeks,TO_Months,TO_Years
 en,NOW,SECOND,MINUTE,HOUR,DAY,WEEK,MONTH,YEAR,MS,S,M,H,D,W,MO,Y
-fi-FI,NYT,SEKUNTI,MINUUTTI,TUNTI,PÄIVÄ,VIIKKO,KUUKAUSI,VUOSI,MS,S,M,T,P,VI,KK,V

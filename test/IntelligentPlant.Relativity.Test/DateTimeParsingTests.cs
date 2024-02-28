@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq.Expressions;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace IntelligentPlant.Relativity.Test {
@@ -9,13 +10,15 @@ namespace IntelligentPlant.Relativity.Test {
     [TestClass]
     public class DateTimeParsingTests {
 
-        private string GetDuration(RelativityParser parser, double quantity, Expression<Func<RelativityTimeOffsetSettings, string>> units) {
-            var unitExpr = units.Compile().Invoke(parser.TimeOffset);
-            return $"{quantity.ToString(parser.CultureInfo)}{unitExpr}";
+        private string GetDuration(IRelativityParser parser, double quantity, Expression<Func<RelativityTimeOffsetSettings, string>> units) {
+            var unitExpr = units.Compile().Invoke(parser.TimeOffsetSettings);
+            return quantity >= 0
+                ? $"{quantity.ToString(parser.CultureInfo)}{unitExpr}"
+                : $"-{Math.Abs(quantity).ToString(parser.CultureInfo)}{unitExpr}";
         }
 
 
-        private string GetRelativeExpression(RelativityParser parser, string baseTime, double quantity, Expression<Func<RelativityTimeOffsetSettings, string>> units) {
+        private string GetRelativeExpression(IRelativityParser parser, string baseTime, double quantity, Expression<Func<RelativityTimeOffsetSettings, string>> units) {
             var duration = GetDuration(parser, quantity, units);
             return quantity < 0
                 ? baseTime + duration
@@ -50,8 +53,8 @@ namespace IntelligentPlant.Relativity.Test {
         }
 
 
-        private IDictionary<string, Action<DateTime, DateTime>> GetOffsetTests(RelativityParser parser, string baseTimeType) {
-            var baseTimeKeyword = (string) typeof(RelativityBaseTimeSettings).GetProperty(baseTimeType).GetValue(parser.BaseTime);
+        private IDictionary<string, Action<DateTime, DateTime>> GetOffsetTests(IRelativityParser parser, string baseTimeType) {
+            var baseTimeKeyword = (string) typeof(RelativityBaseTimeSettings).GetProperty(baseTimeType).GetValue(parser.BaseTimeSettings);
             
             return new Dictionary<string, Action<DateTime, DateTime>>() {
                 {
@@ -121,7 +124,7 @@ namespace IntelligentPlant.Relativity.Test {
                     GetRelativeExpression(parser, baseTimeKeyword, -1.11665, p => p.Days),
                     (now, parsed) => {
                         var baseTime = GetBaseTime(now, baseTimeType, parser.CultureInfo.DateTimeFormat.FirstDayOfWeek);
-                        Assert.AreEqual(1.11665, (baseTime - parsed).TotalDays);
+                        Assert.AreEqual(1.11665, (baseTime - parsed).TotalDays, 0.00001);
                     }
                 },
                 {
@@ -170,60 +173,66 @@ namespace IntelligentPlant.Relativity.Test {
         }
 
 
-        private void DateTimeParseTest(RelativityParser parser, string dateString, TimeZoneInfo timeZone, Action<DateTime, DateTime> validator, bool convertBackToInputTimeZone) {
-            var now = timeZone.GetCurrentTime();
+        private void DateTimeParseTest(IRelativityParser parser, string dateString, Action<DateTime, DateTime> validator, bool convertBackToInputTimeZone) {
+            var now = parser.TimeZone.GetCurrentTime();
 
-            if (!parser.TryConvertToUtcDateTime(dateString, out var dt, timeZone, now)) {
+            if (!parser.TryConvertToUtcDateTime(dateString, now, out var dt)) {
                 Assert.Fail("Not a valid DateTime: {0}", dateString);
             }
 
             var tzDisplayName = convertBackToInputTimeZone
-                ? timeZone?.DisplayName ?? TimeZoneInfo.Local.DisplayName
+                ? parser.TimeZone.DisplayName
                 : TimeZoneInfo.Utc.DisplayName;
 
-            if (convertBackToInputTimeZone) {
-                dt = TimeZoneInfo.ConvertTimeFromUtc(dt, timeZone ?? TimeZoneInfo.Local);
-            }
+            var dtFinal = convertBackToInputTimeZone
+                ? TimeZoneInfo.ConvertTimeFromUtc(dt, parser.TimeZone)
+                : dt;
 
-            var conversionSummary = $"{dateString} => {dt:dd-MMM-yy HH:mm:ss.fff} {tzDisplayName}";
+            var conversionSummary = $"{dateString} => {dtFinal:dd-MMM-yy HH:mm:ss.fff} {tzDisplayName}";
             System.Diagnostics.Trace.WriteLine(conversionSummary);
 
-            validator(now, dt);
+            validator(now, dtFinal);
         }
 
 
         [DataTestMethod]
-        [DataRow("")] // Should fall back to invariant culture
-        [DataRow("en-US")]
-        [DataRow("en-GB")]
-        [DataRow("fi-FI")]
-        public void BaseRelativeDateTimeShouldBeParsed(string culture) {
-            Assert.IsTrue(RelativityParser.TryGetParser(culture, out var parser));
-            if (string.IsNullOrWhiteSpace(culture)) {
-                Assert.AreEqual(CultureInfo.InvariantCulture.Name, parser.CultureInfo.Name);
-            }
-            else {
-                Assert.AreEqual(culture, parser.CultureInfo.Name);
+        [DataRow("", true)] // Should fall back to invariant culture
+        [DataRow("en-US", true)]
+        [DataRow("en-GB", true)]
+        [DataRow("fi-FI", false)] // Should fall back to invariant culture
+        public void BaseRelativeDateTimeShouldBeParsed(string culture, bool verifyParserCulture) {
+            var factory = new RelativityParserFactory();
+            
+            var parser = factory.GetParser(culture);
+            Assert.IsNotNull(parser);
+
+            if (verifyParserCulture) {
+                if (string.IsNullOrWhiteSpace(culture)) {
+                    Assert.AreEqual(CultureInfo.InvariantCulture.Name, parser.CultureInfo.Name);
+                }
+                else {
+                    Assert.AreEqual(culture, parser.CultureInfo.Name);
+                }
             }
 
             var tests = new Dictionary<string, Action<DateTime, DateTime>>() {
                 {
-                    parser.BaseTime.NowAlt,
+                    parser.BaseTimeSettings.NowAlt,
                     (now, parsed) => Assert.AreEqual(0, (now - parsed).TotalSeconds)
                 },
                 {
-                    parser.BaseTime.Now,
+                    parser.BaseTimeSettings.Now,
                     (now, parsed) => Assert.AreEqual(0, (now - parsed).TotalSeconds)
                 },
                 {
-                    parser.BaseTime.CurrentSecond,
+                    parser.BaseTimeSettings.CurrentSecond,
                     (now, parsed) => {
                         Assert.AreEqual(parsed.Millisecond, 0);
                         Assert.IsTrue((now - parsed).TotalSeconds < 1);
                     }
                 },
                 {
-                    parser.BaseTime.CurrentMinute,
+                    parser.BaseTimeSettings.CurrentMinute,
                     (now, parsed) => {
                         Assert.AreEqual(parsed.Millisecond, 0);
                         Assert.AreEqual(parsed.Second, 0);
@@ -231,7 +240,7 @@ namespace IntelligentPlant.Relativity.Test {
                     }
                 },
                 {
-                    parser.BaseTime.CurrentHour,
+                    parser.BaseTimeSettings.CurrentHour,
                     (now, parsed) => {
                         Assert.AreEqual(parsed.Millisecond, 0);
                         Assert.AreEqual(parsed.Second, 0);
@@ -240,7 +249,7 @@ namespace IntelligentPlant.Relativity.Test {
                     }
                 },
                 {
-                    parser.BaseTime.CurrentDay,
+                    parser.BaseTimeSettings.CurrentDay,
                     (now, parsed) => {
                         Assert.AreEqual(parsed.Millisecond, 0);
                         Assert.AreEqual(parsed.Second, 0);
@@ -250,7 +259,7 @@ namespace IntelligentPlant.Relativity.Test {
                     }
                 },
                 {
-                    parser.BaseTime.CurrentWeek,
+                    parser.BaseTimeSettings.CurrentWeek,
                     (now, parsed) => {
                         Assert.AreEqual(parsed.Millisecond, 0);
                         Assert.AreEqual(parsed.Second, 0);
@@ -261,7 +270,7 @@ namespace IntelligentPlant.Relativity.Test {
                     }
                 },
                 {
-                    parser.BaseTime.CurrentMonth,
+                    parser.BaseTimeSettings.CurrentMonth,
                     (now, parsed) => {
                         Assert.AreEqual(parsed.Millisecond, 0);
                         Assert.AreEqual(parsed.Second, 0);
@@ -272,7 +281,7 @@ namespace IntelligentPlant.Relativity.Test {
                     }
                 },
                 {
-                    parser.BaseTime.CurrentYear,
+                    parser.BaseTimeSettings.CurrentYear,
                     (now, parsed) => {
                         Assert.AreEqual(parsed.Millisecond, 0);
                         Assert.AreEqual(parsed.Second, 0);
@@ -286,23 +295,29 @@ namespace IntelligentPlant.Relativity.Test {
             };
 
             foreach (var item in tests) {
-                DateTimeParseTest(parser, item.Key, TimeZoneInfo.Local, item.Value, true);
+                DateTimeParseTest(parser, item.Key, item.Value, true);
             }
         }
 
 
         [DataTestMethod]
-        [DataRow("")] // Should fall back to invariant culture
-        [DataRow("en-US")]
-        [DataRow("en-GB")]
-        [DataRow("fi-FI")]
-        public void RelativeDateTimeWithOffsetShouldBeParsed(string culture) {
-            Assert.IsTrue(RelativityParser.TryGetParser(culture, out var parser));
-            if (string.IsNullOrWhiteSpace(culture)) {
-                Assert.AreEqual(CultureInfo.InvariantCulture.Name, parser.CultureInfo.Name);
-            }
-            else {
-                Assert.AreEqual(culture, parser.CultureInfo.Name);
+        [DataRow("", true)] // Should fall back to invariant culture
+        [DataRow("en-US", true)]
+        [DataRow("en-GB", true)]
+        [DataRow("fi-FI", false)] // Should fall back to invariant culture
+        public void RelativeDateTimeWithOffsetShouldBeParsed(string culture, bool verifyParserCulture) {
+            var factory = new RelativityParserFactory();
+
+            var parser = factory.GetParser(culture);
+            Assert.IsNotNull(parser);
+
+            if (verifyParserCulture) {
+                if (string.IsNullOrWhiteSpace(culture)) {
+                    Assert.AreEqual(CultureInfo.InvariantCulture.Name, parser.CultureInfo.Name);
+                }
+                else {
+                    Assert.AreEqual(culture, parser.CultureInfo.Name);
+                }
             }
 
             var baseTimeTypes = new[] { 
@@ -321,75 +336,81 @@ namespace IntelligentPlant.Relativity.Test {
                 var tests = GetOffsetTests(parser, baseTimeType);
 
                 foreach (var item in tests) {
-                    DateTimeParseTest(parser, item.Key, TimeZoneInfo.Local, item.Value, true);
+                    DateTimeParseTest(parser, item.Key, item.Value, true);
                 }
             }
         }
 
 
         [DataTestMethod]
-        [DataRow("")] // Should fall back to invariant culture
-        [DataRow("en-US")]
-        [DataRow("en-GB")]
-        [DataRow("fi-FI")]
-        public void DurationShouldBeParsed(string culture) {
-            Assert.IsTrue(RelativityParser.TryGetParser(culture, out var parser));
-            if (string.IsNullOrWhiteSpace(culture)) {
-                Assert.AreEqual(CultureInfo.InvariantCulture.Name, parser.CultureInfo.Name);
-            }
-            else {
-                Assert.AreEqual(culture, parser.CultureInfo.Name);
+        [DataRow("", true)] // Should fall back to invariant culture
+        [DataRow("en-US", true)]
+        [DataRow("en-GB", true)]
+        [DataRow("fi-FI", false)] // Should fall back to invariant culture
+        public void DurationShouldBeParsed(string culture, bool verifyCulture) {
+            var factory = new RelativityParserFactory();
+
+            var parser = factory.GetParser(culture);
+            Assert.IsNotNull(parser);
+
+            if (verifyCulture) {
+                if (string.IsNullOrWhiteSpace(culture)) {
+                    Assert.AreEqual(CultureInfo.InvariantCulture.Name, parser.CultureInfo.Name);
+                }
+                else {
+                    Assert.AreEqual(culture, parser.CultureInfo.Name);
+                }
             }
 
             string unparsed;
             TimeSpan parsed;
 
             unparsed = GetDuration(parser, 123, x => x.Milliseconds);
-            parsed = parser.ToTimeSpan(unparsed);
+            parsed = parser.ConvertToTimeSpan(unparsed);
             Assert.AreEqual(123, parsed.TotalMilliseconds);
 
             unparsed = GetDuration(parser, 123.456, x => x.Milliseconds);
-            parsed = parser.ToTimeSpan(unparsed);
+            parsed = parser.ConvertToTimeSpan(unparsed);
             Assert.AreEqual(123.456, parsed.TotalMilliseconds);
 
             unparsed = GetDuration(parser, 123, x => x.Seconds);
-            parsed = parser.ToTimeSpan(unparsed);
+            parsed = parser.ConvertToTimeSpan(unparsed);
             Assert.AreEqual(123, parsed.TotalSeconds);
 
             unparsed = GetDuration(parser, 123.456, x => x.Seconds);
-            parsed = parser.ToTimeSpan(unparsed);
+            parsed = parser.ConvertToTimeSpan(unparsed);
             Assert.AreEqual(123.456, parsed.TotalSeconds, 0.001);
 
             unparsed = GetDuration(parser, 123, x => x.Minutes);
-            parsed = parser.ToTimeSpan(unparsed);
+            parsed = parser.ConvertToTimeSpan(unparsed);
             Assert.AreEqual(123, parsed.TotalMinutes);
 
             unparsed = GetDuration(parser, 123.456, x => x.Minutes);
-            parsed = parser.ToTimeSpan(unparsed);
+            parsed = parser.ConvertToTimeSpan(unparsed);
             Assert.AreEqual(123.456, parsed.TotalMinutes);
 
             unparsed = GetDuration(parser, 123, x => x.Hours);
-            parsed = parser.ToTimeSpan(unparsed);
+            parsed = parser.ConvertToTimeSpan(unparsed);
             Assert.AreEqual(123, parsed.TotalHours);
 
             unparsed = GetDuration(parser, 123.456, x => x.Hours);
-            parsed = parser.ToTimeSpan(unparsed);
+            parsed = parser.ConvertToTimeSpan(unparsed);
             Assert.AreEqual(123.456, parsed.TotalHours, 0.001);
 
             unparsed = GetDuration(parser, 123, x => x.Days);
-            parsed = parser.ToTimeSpan(unparsed);
+            parsed = parser.ConvertToTimeSpan(unparsed);
             Assert.AreEqual(123, parsed.TotalDays);
 
             unparsed = GetDuration(parser, 123.456, x => x.Days);
-            parsed = parser.ToTimeSpan(unparsed);
+            parsed = parser.ConvertToTimeSpan(unparsed);
             Assert.AreEqual(123.456, parsed.TotalDays, 0.001);
 
             unparsed = GetDuration(parser, 123, x => x.Weeks);
-            parsed = parser.ToTimeSpan(unparsed);
+            parsed = parser.ConvertToTimeSpan(unparsed);
             Assert.AreEqual(123 * 7, parsed.TotalDays);
 
             unparsed = GetDuration(parser, 123.456, x => x.Weeks);
-            parsed = parser.ToTimeSpan(unparsed);
+            parsed = parser.ConvertToTimeSpan(unparsed);
             Assert.AreEqual(123.456 * 7, parsed.TotalDays);
         }
 

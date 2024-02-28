@@ -7,23 +7,29 @@
   <Import Project="$(ParentProject)" Condition=" '$(ParentProject)' != '' " /> 
   
   <PropertyGroup>
-    <Authors>Intelligent Plant Ltd.</Authors>
+    <Authors>Intelligent Plant</Authors>
+    <Company>Intelligent Plant</Company>
     <PackageProjectUrl>https://github.com/intelligentplant/IntelligentPlant.Relativity</PackageProjectUrl>
     <PackageOutputPath>$(MSBuildThisFileDirectory)artifacts\packages\$(Configuration)</PackageOutputPath>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <NeutralLanguage>en</NeutralLanguage>
+    <CopyrightStartYear>2019</CopyrightStartYear>
   </PropertyGroup>
-
+  
   <Choose>
-    <When Condition=" $([System.DateTime]::UtcNow.Year) > 2019 ">
+    <When Condition=" $([System.DateTime]::UtcNow.Year) > $(CopyrightStartYear) ">
       <PropertyGroup>
-        <Copyright>Copyright © 2019-$([System.DateTime]::UtcNow.Year) $(Authors)</Copyright>
+        <Copyright>Copyright © $(CopyrightStartYear)-$([System.DateTime]::UtcNow.Year) $(Authors)</Copyright>
       </PropertyGroup>
     </When>
     <Otherwise>
       <PropertyGroup>
-        <Copyright>Copyright © 2019 $(Authors)</Copyright>
+        <Copyright>Copyright © $(CopyrightStartYear) $(Authors)</Copyright>
       </PropertyGroup>
     </Otherwise>
   </Choose>
+
+  <!-- Extension point to allow Continuous Integration systems to inject their own configuration. -->
+  <Import Project="CI.props" Condition="Exists('CI.props')" />
 
 </Project>

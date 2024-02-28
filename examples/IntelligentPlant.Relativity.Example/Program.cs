@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace IntelligentPlant.Relativity.Example {
     class Program {
@@ -11,19 +13,20 @@ namespace IntelligentPlant.Relativity.Example {
             "DAY+1W",
             "second-5m",
             "Hour+1d",
+            "MONTH",
             "MONTH-3MO",
             "Week-4d",
-            "MINUTE-15m"
+            "MINUTE-15m",
+            "YEAR"
         };
 
 
         static void Main(string[] args) {
-            if (!RelativityParser.TryGetParser("en-GB", out var parser)) {
-                parser = RelativityParser.Default;
-            }
+            var factory = new RelativityParserFactory();
+            var parser = factory.GetParser("en-GB");
 
             foreach (var item in ExampleDates) {
-                Console.WriteLine($"[{item}] => {TimeZoneInfo.ConvertTimeFromUtc(parser.ToUtcDateTime(item), TimeZoneInfo.Local).ToString(OutputDateFormat)} {TimeZoneInfo.Local.DisplayName}");
+                Console.WriteLine($"[{item}] => {TimeZoneInfo.ConvertTimeFromUtc(parser.ConvertToUtcDateTime(item), TimeZoneInfo.Local).ToString(OutputDateFormat)} {TimeZoneInfo.Local.Id}");
             }
         }
 
