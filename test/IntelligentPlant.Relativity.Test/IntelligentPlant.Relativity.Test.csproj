@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net8.0;net48</TargetFrameworks>
     <IsPackable>false</IsPackable>
+    <IsSignable>false</IsSignable>
   </PropertyGroup>
 
   <ItemGroup>
