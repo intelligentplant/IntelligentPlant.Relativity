@@ -105,10 +105,10 @@ namespace IntelligentPlant.Relativity {
             // For local or UTC time zones, we can use the built-in invariant parsers. Otherwise,
             // we will clone the local invariant parser with a new time zone.
             return timeZone.Equals(TimeZoneInfo.Local)
-                ? RelativityParser.InvariantParser
+                ? RelativityParser.Invariant
                 : timeZone.Equals(TimeZoneInfo.Utc)
-                    ? RelativityParser.InvariantUtcParser
-                    : Clone(RelativityParser.InvariantParser, null, timeZone);
+                    ? RelativityParser.InvariantUtc
+                    : Clone(RelativityParser.Invariant, null, timeZone);
         }
 
 
