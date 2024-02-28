@@ -9,6 +9,12 @@ namespace IntelligentPlant.Relativity.AspNetCore {
     public abstract class TimeZoneProvider {
 
         /// <summary>
+        /// Creates a new <see cref="TimeZoneProvider"/> instance.
+        /// </summary>
+        internal TimeZoneProvider() { }
+
+
+        /// <summary>
         /// Gets the time zone to use for the specified HTTP context.
         /// </summary>
         /// <param name="context">
