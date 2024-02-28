@@ -93,5 +93,51 @@ namespace IntelligentPlant.Relativity {
             return parser.ConvertToUtcDateTime(dateString, null);
         }
 
+
+        /// <summary>
+        /// Tests if a string is a valid absolute or relative timestamp.
+        /// </summary>
+        /// <param name="parser">
+        ///   The parser.
+        /// </param>
+        /// <param name="dateString">
+        ///   The date string.
+        /// </param>
+        /// <returns>
+        ///   <see langword="true"/> if the date string is valid; otherwise, <see langword="false"/>.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">
+        ///   <paramref name="parser"/> is <see langword="null"/>.
+        /// </exception>
+        public static bool IsValidTimestamp(this IRelativityParser parser, string dateString) {
+            if (parser == null) {
+                throw new ArgumentNullException(nameof(parser));
+            }
+            return parser.TryConvertToUtcDateTime(dateString, out _);
+        }
+
+
+        /// <summary>
+        /// Tests if a string is a valid time span literal or Relativity duration.
+        /// </summary>
+        /// <param name="parser">
+        ///   The parser.
+        /// </param>
+        /// <param name="durationString">
+        ///   The duration string.
+        /// </param>
+        /// <returns>
+        ///   <see langword="true"/> if the duration string is valid; otherwise, <see langword="false"/>.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">
+        ///   <paramref name="parser"/> is <see langword="null"/>.
+        /// </exception>
+        public static bool IsValidDuration(this IRelativityParser parser, string durationString) {
+            if (parser == null) {
+                throw new ArgumentNullException(nameof(parser));
+            }
+            return parser.TryConvertToTimeSpan(durationString, out _);
+        }
+
     }
 }
