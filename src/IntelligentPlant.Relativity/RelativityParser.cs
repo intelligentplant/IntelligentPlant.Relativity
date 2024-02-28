@@ -16,7 +16,7 @@ namespace IntelligentPlant.Relativity {
         /// An <see cref="IRelativityParser"/> that uses the invariant culture and the time zone 
         /// of the local machine.
         /// </summary>
-        public static IRelativityParser InvariantParser { get; } = new Parser(new RelativityParserConfiguration() {
+        public static IRelativityParser Invariant { get; } = new Parser(new RelativityParserConfiguration() {
             CultureInfo = CultureInfo.InvariantCulture,
             BaseTimeSettings = new RelativityBaseTimeSettings(),
             TimeOffsetSettings = new RelativityTimeOffsetSettings()
@@ -26,11 +26,27 @@ namespace IntelligentPlant.Relativity {
         /// An <see cref="IRelativityParser"/> that uses the invariant culture and the UTC time 
         /// zone.
         /// </summary>
-        public static IRelativityParser InvariantUtcParser { get; } = new Parser(new RelativityParserConfiguration() {
+        public static IRelativityParser InvariantUtc { get; } = new Parser(new RelativityParserConfiguration() {
             CultureInfo = CultureInfo.InvariantCulture,
             BaseTimeSettings = new RelativityBaseTimeSettings(),
             TimeOffsetSettings = new RelativityTimeOffsetSettings()
         }, TimeZoneInfo.Utc);
+
+
+        /// <summary>
+        /// An <see cref="IRelativityParser"/> that uses the invariant culture and the time zone 
+        /// of the local machine.
+        /// </summary>
+        [Obsolete("Use RelativityParser.Invariant instead. This property will be removed prior to the final v2.0 release.", false)]
+        public static IRelativityParser InvariantParser => Invariant;
+
+        /// <summary>
+        /// An <see cref="IRelativityParser"/> that uses the invariant culture and the time zone 
+        /// of the local machine.
+        /// </summary>
+        [Obsolete("Use RelativityParser.InvariantUtc instead. This property will be removed prior to the final v2.0 release.", false)]
+        public static IRelativityParser InvariantUtcParser => InvariantUtc;
+
 
         /// <summary>
         /// The <see cref="IRelativityParser"/> for the current asynchronous control flow.
@@ -64,10 +80,10 @@ namespace IntelligentPlant.Relativity {
         /// <seealso cref="AsyncLocal{T}"/>
         public static IRelativityParser Current {
             get {
-                return s_current.Value ?? InvariantParser;
+                return s_current.Value ?? Invariant;
             }
             set {
-                s_current.Value = value ?? InvariantParser;
+                s_current.Value = value ?? Invariant;
             }
         }
 
