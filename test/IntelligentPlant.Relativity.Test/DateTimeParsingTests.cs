@@ -196,21 +196,23 @@ namespace IntelligentPlant.Relativity.Test {
 
 
         [DataTestMethod]
-        [DataRow("")] // Should fall back to invariant culture
-        [DataRow("en-US")]
-        [DataRow("en-GB")]
-        [DataRow("fi-FI")]
-        public void BaseRelativeDateTimeShouldBeParsed(string culture) {
+        [DataRow("", true)] // Should fall back to invariant culture
+        [DataRow("en-US", true)]
+        [DataRow("en-GB", true)]
+        [DataRow("fi-FI", false)] // Should fall back to invariant culture
+        public void BaseRelativeDateTimeShouldBeParsed(string culture, bool verifyParserCulture) {
             var factory = new RelativityParserFactory();
             
             var parser = factory.GetParser(culture);
             Assert.IsNotNull(parser);
 
-            if (string.IsNullOrWhiteSpace(culture)) {
-                Assert.AreEqual(CultureInfo.InvariantCulture.Name, parser.CultureInfo.Name);
-            }
-            else {
-                Assert.AreEqual(culture, parser.CultureInfo.Name);
+            if (verifyParserCulture) {
+                if (string.IsNullOrWhiteSpace(culture)) {
+                    Assert.AreEqual(CultureInfo.InvariantCulture.Name, parser.CultureInfo.Name);
+                }
+                else {
+                    Assert.AreEqual(culture, parser.CultureInfo.Name);
+                }
             }
 
             var tests = new Dictionary<string, Action<DateTime, DateTime>>() {
@@ -299,21 +301,23 @@ namespace IntelligentPlant.Relativity.Test {
 
 
         [DataTestMethod]
-        [DataRow("")] // Should fall back to invariant culture
-        [DataRow("en-US")]
-        [DataRow("en-GB")]
-        [DataRow("fi-FI")]
-        public void RelativeDateTimeWithOffsetShouldBeParsed(string culture) {
+        [DataRow("", true)] // Should fall back to invariant culture
+        [DataRow("en-US", true)]
+        [DataRow("en-GB", true)]
+        [DataRow("fi-FI", false)] // Should fall back to invariant culture
+        public void RelativeDateTimeWithOffsetShouldBeParsed(string culture, bool verifyParserCulture) {
             var factory = new RelativityParserFactory();
 
             var parser = factory.GetParser(culture);
             Assert.IsNotNull(parser);
 
-            if (string.IsNullOrWhiteSpace(culture)) {
-                Assert.AreEqual(CultureInfo.InvariantCulture.Name, parser.CultureInfo.Name);
-            }
-            else {
-                Assert.AreEqual(culture, parser.CultureInfo.Name);
+            if (verifyParserCulture) {
+                if (string.IsNullOrWhiteSpace(culture)) {
+                    Assert.AreEqual(CultureInfo.InvariantCulture.Name, parser.CultureInfo.Name);
+                }
+                else {
+                    Assert.AreEqual(culture, parser.CultureInfo.Name);
+                }
             }
 
             var baseTimeTypes = new[] { 
@@ -339,21 +343,23 @@ namespace IntelligentPlant.Relativity.Test {
 
 
         [DataTestMethod]
-        [DataRow("")] // Should fall back to invariant culture
-        [DataRow("en-US")]
-        [DataRow("en-GB")]
-        [DataRow("fi-FI")]
-        public void DurationShouldBeParsed(string culture) {
+        [DataRow("", true)] // Should fall back to invariant culture
+        [DataRow("en-US", true)]
+        [DataRow("en-GB", true)]
+        [DataRow("fi-FI", false)] // Should fall back to invariant culture
+        public void DurationShouldBeParsed(string culture, bool verifyCulture) {
             var factory = new RelativityParserFactory();
 
             var parser = factory.GetParser(culture);
             Assert.IsNotNull(parser);
 
-            if (string.IsNullOrWhiteSpace(culture)) {
-                Assert.AreEqual(CultureInfo.InvariantCulture.Name, parser.CultureInfo.Name);
-            }
-            else {
-                Assert.AreEqual(culture, parser.CultureInfo.Name);
+            if (verifyCulture) {
+                if (string.IsNullOrWhiteSpace(culture)) {
+                    Assert.AreEqual(CultureInfo.InvariantCulture.Name, parser.CultureInfo.Name);
+                }
+                else {
+                    Assert.AreEqual(culture, parser.CultureInfo.Name);
+                }
             }
 
             string unparsed;

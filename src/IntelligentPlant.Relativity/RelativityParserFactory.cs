@@ -142,7 +142,7 @@ namespace IntelligentPlant.Relativity {
             var ci = cultureInfo;
 
             while (true) {
-                if (ci == null) {
+                if (ci == null || CultureInfo.InvariantCulture.Name.Equals(ci.Name, StringComparison.OrdinalIgnoreCase)) {
                     break;
                 }
 
