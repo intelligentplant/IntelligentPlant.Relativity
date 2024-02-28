@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
 namespace IntelligentPlant.Relativity {
@@ -6,55 +7,63 @@ namespace IntelligentPlant.Relativity {
     /// <summary>
     /// Describes the identifiers that can be used to describe a period of time.
     /// </summary>
-    public class RelativityTimeOffsetSettings {
+    public sealed class RelativityTimeOffsetSettings {
 
         /// <summary>
         /// Years. Not available when parsing time span literals. Quanities must be specified 
         /// using whole numbers. When <see langword="null"/>, this unit cannot be used.
         /// </summary>
-        public string Years { get; }
+        [MaxLength(30)]
+        public string? Years { get; }
 
         /// <summary>
         /// Months. Not available when parsing time span literals. Quanities must be specified 
         /// using whole numbers. When <see langword="null"/>, this unit cannot be used.
         /// </summary>
-        public string Months { get; }
+        [MaxLength(30)]
+        public string? Months { get; }
 
         /// <summary>
         /// Weeks. Quanities can be specified using whole or fractional numbers. When 
         /// <see langword="null"/>, this unit cannot be used.
         /// </summary>
-        public string Weeks { get; }
+        [MaxLength(30)]
+        public string? Weeks { get; }
 
         /// <summary>
         /// Days. Quanities can be specified using whole or fractional numbers. When 
         /// <see langword="null"/>, this unit cannot be used.
         /// </summary>
-        public string Days { get; }
+        [MaxLength(30)]
+        public string? Days { get; }
 
         /// <summary>
         /// Hours. Quanities can be specified using whole or fractional numbers. When 
         /// <see langword="null"/>, this unit cannot be used.
         /// </summary>
-        public string Hours { get; }
+        [MaxLength(30)]
+        public string? Hours { get; }
 
         /// <summary>
         /// Minutes. Quanities can be specified using whole or fractional numbers. When 
         /// <see langword="null"/>, this unit cannot be used.
         /// </summary>
-        public string Minutes { get; }
+        [MaxLength(30)]
+        public string? Minutes { get; }
 
         /// <summary>
         /// Seconds. Quanities can be specified using whole or fractional numbers. When 
         /// <see langword="null"/>, this unit cannot be used.
         /// </summary>
-        public string Seconds { get; }
+        [MaxLength(30)]
+        public string? Seconds { get; }
 
         /// <summary>
         /// Milliseconds. Quanities can be specified using whole or fractional numbers. When 
         /// <see langword="null"/>, this unit cannot be used.
         /// </summary>
-        public string Milliseconds { get; }
+        [MaxLength(30)]
+        public string? Milliseconds { get; }
 
 
         /// <summary>
