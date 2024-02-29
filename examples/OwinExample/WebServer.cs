@@ -26,7 +26,7 @@ namespace OwinExample {
 
         private void ConfigureWebHost(IAppBuilder app) {
             var factory = new RelativityParserFactory();
-            app.UseRelativity(factory, new QueryStringTimeZoneProvider());
+            app.UseRelativity(factory, new QueryStringTimeZoneProvider(), new RequestHeaderTimeZoneProvider());
 
             app.Use((context, _) => {
                 var timestamp = context.Request.Query["timestamp"];
