@@ -34,21 +34,6 @@ namespace IntelligentPlant.Relativity {
 
 
         /// <summary>
-        /// An <see cref="IRelativityParser"/> that uses the invariant culture and the time zone 
-        /// of the local machine.
-        /// </summary>
-        [Obsolete("Use RelativityParser.Invariant instead. This property will be removed prior to the final v2.0 release.", false)]
-        public static IRelativityParser InvariantParser => Invariant;
-
-        /// <summary>
-        /// An <see cref="IRelativityParser"/> that uses the invariant culture and the time zone 
-        /// of the local machine.
-        /// </summary>
-        [Obsolete("Use RelativityParser.InvariantUtc instead. This property will be removed prior to the final v2.0 release.", false)]
-        public static IRelativityParser InvariantUtcParser => InvariantUtc;
-
-
-        /// <summary>
         /// The <see cref="IRelativityParser"/> for the current asynchronous control flow.
         /// </summary>
         private static readonly AsyncLocal<IRelativityParser> s_current = new AsyncLocal<IRelativityParser>();
