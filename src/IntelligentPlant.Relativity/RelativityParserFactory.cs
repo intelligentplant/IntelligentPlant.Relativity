@@ -164,7 +164,7 @@ namespace IntelligentPlant.Relativity {
                 ci = ci.Parent;
             }
 
-            return GetInvariantParser(timeZone);
+            return Clone(RelativityParser.InvariantUtc, cultureInfo, timeZone);
         }
 
 
