@@ -12,7 +12,8 @@ builder.Services.AddRequestLocalization(options => {
 });
 
 builder.Services.AddRelativity()
-    .AddQueryStringTimeZoneProvider();
+    .AddQueryStringTimeZoneProvider()
+    .AddRequestHeaderTimeZoneProvider();
 
 var app = builder.Build();
 
