@@ -109,7 +109,7 @@ namespace IntelligentPlant.Relativity {
         /// <exception cref="ArgumentNullException">
         ///   <paramref name="parser"/> is <see langword="null"/>.
         /// </exception>
-        public static bool IsValidTimestamp(this IRelativityParser parser, string dateString) {
+        public static bool IsValidDateTime(this IRelativityParser parser, string dateString) {
             if (parser == null) {
                 throw new ArgumentNullException(nameof(parser));
             }
@@ -132,7 +132,7 @@ namespace IntelligentPlant.Relativity {
         /// <exception cref="ArgumentNullException">
         ///   <paramref name="parser"/> is <see langword="null"/>.
         /// </exception>
-        public static bool IsValidDuration(this IRelativityParser parser, string durationString) {
+        public static bool IsValidTimeSpan(this IRelativityParser parser, string durationString) {
             if (parser == null) {
                 throw new ArgumentNullException(nameof(parser));
             }

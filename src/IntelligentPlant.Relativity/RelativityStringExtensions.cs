@@ -236,5 +236,39 @@ namespace System {
             return (parser ?? RelativityParser.Current).ConvertToTimeSpan(durationString);
         }
 
+
+        /// <summary>
+        /// Tests if the string is a valid absolute or relative timestamp.
+        /// </summary>
+        /// <param name="dateString">
+        ///   The date string.
+        /// </param>
+        /// <param name="parser">
+        ///   The parser.
+        /// </param>
+        /// <returns>
+        ///   <see langword="true"/> if the date string is valid; otherwise, <see langword="false"/>.
+        /// </returns>
+        public static bool IsValidDateTime(this string dateString, IRelativityParser? parser) {
+            return (parser ?? RelativityParser.Current).IsValidDateTime(dateString);
+        }
+
+
+        /// <summary>
+        /// Tests if the string is a valid time span literal or Relativity duration.
+        /// </summary>
+        /// <param name="durationString">
+        ///   The duration string.
+        /// </param>
+        /// <param name="parser">
+        ///   The parser.
+        /// </param>
+        /// <returns>
+        ///   <see langword="true"/> if the duration string is valid; otherwise, <see langword="false"/>.
+        /// </returns>
+        public static bool IsValidTimeSpan(this string durationString, IRelativityParser? parser) {
+            return (parser ?? RelativityParser.Current).IsValidTimeSpan(durationString);
+        }
+
     }
 }
