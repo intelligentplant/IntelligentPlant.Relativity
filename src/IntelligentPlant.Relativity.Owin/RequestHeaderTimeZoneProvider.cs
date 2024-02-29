@@ -44,8 +44,8 @@ namespace IntelligentPlant.Relativity.Owin {
 
         /// <inheritdoc/>
         public override Task<TimeZoneInfo?> GetTimeZoneAsync(IOwinContext context) {
-            var tzHeaderValsRaw = new List<string>(context.Request.Headers.GetCommaSeparatedValues(HeaderName));
-            if (tzHeaderValsRaw.Count > 0) {
+            var tzHeaderValsRaw = context.Request.Headers.GetCommaSeparatedValues(HeaderName);
+            if (tzHeaderValsRaw?.Count > 0) {
                 var tzHeaderVals = new List<StringWithQualityHeaderValue>();
 
                 foreach (var item in tzHeaderValsRaw) {
