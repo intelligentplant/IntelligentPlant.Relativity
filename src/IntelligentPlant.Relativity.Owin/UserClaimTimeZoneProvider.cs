@@ -44,15 +44,7 @@ namespace IntelligentPlant.Relativity.Owin {
             }
 
             var claim = context.Authentication.User.FindFirst(ClaimType);
-            if (!string.IsNullOrWhiteSpace(claim?.Value)) {
-                try {
-                    var tz = TimeZoneInfo.FindSystemTimeZoneById(claim!.Value);
-                    return Task.FromResult<TimeZoneInfo?>(tz);
-                }
-                catch { }
-            }
-
-            return Task.FromResult<TimeZoneInfo?>(null);
+            return Task.FromResult(GetTimeZoneById(claim?.Value));
         }
     }
 }

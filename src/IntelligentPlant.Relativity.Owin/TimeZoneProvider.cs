@@ -28,5 +28,33 @@ namespace IntelligentPlant.Relativity.Owin {
         /// </returns>
         public abstract Task<TimeZoneInfo?> GetTimeZoneAsync(IOwinContext context);
 
+
+        /// <summary>
+        /// Gets a time zone by its IANA or Windows ID.
+        /// </summary>
+        /// <param name="timeZoneId">
+        ///   The time zone ID.
+        /// </param>
+        /// <returns>
+        ///   The time zone, or <see langword="null"/> if the time zone ID is not valid.
+        /// </returns>
+        /// <remarks>
+        ///   This method uses <see cref="TimeZoneConverter.TZConvert"/> to resolve the time zone. 
+        ///   Please refer to <a href="https://github.com/mattjohnsonpint/TimeZoneConverter"></a> for more 
+        ///   information about how time zones are resolved.
+        /// </remarks>
+        protected TimeZoneInfo? GetTimeZoneById(string? timeZoneId) {
+            if (string.IsNullOrWhiteSpace(timeZoneId)) {
+                return null;
+            }
+
+            try {
+                return TimeZoneConverter.TZConvert.GetTimeZoneInfo(timeZoneId!);
+            }
+            catch (TimeZoneNotFoundException) {
+                return null;
+            }
+        }
+
     }
 }

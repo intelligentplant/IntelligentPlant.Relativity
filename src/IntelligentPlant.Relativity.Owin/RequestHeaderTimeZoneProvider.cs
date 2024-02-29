@@ -60,8 +60,10 @@ namespace IntelligentPlant.Relativity.Owin {
 
                 foreach (var item in tzHeaderVals.OrderByDescending(x => x.Quality)) {
                     try {
-                        var tz = TimeZoneInfo.FindSystemTimeZoneById(item.Value!);
-                        return Task.FromResult<TimeZoneInfo?>(tz);
+                        var tz = GetTimeZoneById(item.Value!);
+                        if (tz != null) {
+                            return Task.FromResult<TimeZoneInfo?>(tz);
+                        }
                     }
                     catch { }
                 }

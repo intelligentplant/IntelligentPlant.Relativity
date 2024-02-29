@@ -37,16 +37,7 @@ namespace IntelligentPlant.Relativity.Owin {
 
         /// <inheritdoc/>
         public override Task<TimeZoneInfo?> GetTimeZoneAsync(IOwinContext context) {
-            var tzRaw = context.Request.Query[QueryStringKey];
-            if (!string.IsNullOrWhiteSpace(tzRaw)) {
-                try {
-                    var tz = TimeZoneInfo.FindSystemTimeZoneById(tzRaw!);
-                    return Task.FromResult<TimeZoneInfo?>(tz);
-                }
-                catch { }
-            }
-
-            return Task.FromResult<TimeZoneInfo?>(null);
+            return Task.FromResult(GetTimeZoneById(context.Request.Query[QueryStringKey]));
         }
 
     }
