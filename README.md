@@ -5,36 +5,35 @@ A C# library for converting absolute and relative timestamp strings into UTC `Da
 
 # Getting Started
 
-All parsers implement the [IRelativityParser](./src/IntelligentPlant.Relativity/IRelativityParser.cs) interface. `IRelativityParser` parses relative timestamps and durations using a given `CultureInfo` and `TimeZoneInfo`. The `CultureInfo` controls how absolute timestamps and `TimeSpan` literals are parsed, as well as providing keywords that define the base times and time periods that can be used when defining relative timestamps or durations. 
+The [IRelativityParser](./src/IntelligentPlant.Relativity/IRelativityParser.cs) interface defines a parser that can be used to convert relative timestamps and durations into absolute `DateTime` and `TimeSpan` instances. 
 
-The static [RelativityParser](./src/IntelligentPlant.Relativity/RelativityParser.cs) class provides the following built-in parsers:
+Ain `IRelativityParser` parses timestamps and durations using a given `CultureInfo` and `TimeZoneInfo`. The `CultureInfo` controls how absolute timestamps and `TimeSpan` literals are parsed, as well as providing keywords that define the base times and time periods that can be used when defining relative timestamps or durations. The `TimeZoneInfo` controls the time zone that is used when converting relative timestamps to absolute timestamps.
+
+The static [RelativityParser](./src/IntelligentPlant.Relativity/RelativityParser.cs) class provides quick access to several built-in parsers:
 
 * `RelativityParser.Invariant` - a parser that uses `CultureInfo.InvariantCulture` and the system's local time zone when converting relative timestamps to absolute timestamps.
 * `RelativityParser.InvariantUtc` - a parser that uses `CultureInfo.InvariantCulture` and UTC when converting relative timestamps to absolute timestamps.
 * `RelativityParser.Current` - the parser for the current asynchronous context. See [Asynchronous Control Flow](#asynchronous-control-flow) for more information.
 
-`IRelativityParser` instances for specific cultures and time zones can be created using an [IRelativityParserFactory](./src/IntelligentPlant.Relativity/IRelativityParserFactory.cs). The default implementation of `IRelativityParserFactory` is [RelativityParserFactory](./src/IntelligentPlant.Relativity/RelativityParserFactory.cs). You can use `RelativityParserFactory.Default` to obtain a default `IRelativityParserFactory` instance, or create your own instance of `RelativityParserFactory` directly.
+The [IRelativityParserFactory](./src/IntelligentPlant.Relativity/IRelativityParserFactory.cs) interface defines a factory for creating custom `IRelativityParser` instances. The default implementation of `IRelativityParserFactory` is [RelativityParserFactory](./src/IntelligentPlant.Relativity/RelativityParserFactory.cs). You can use the static `RelativityParserFactory.Default` property to obtain the default `IRelativityParserFactory` instance, or create your own instance of `RelativityParserFactory` directly.
 
-To retrieve a parser instance for a specific culture, call the `GetParser` method on the factory:
+Parser configurations for additional cultures can be registered with the `IRelativityParserFactory`. To retrieve a parser instance for a specific culture, call the `GetParser` method on the factory:
 
 ```csharp
-// Get culture-specific parsers that use the system's local time zone.
+// Get a culture-specific parser that uses the system's local time zone.
 var enGBParser = factory.GetParser(CultureInfo.GetCultureInfo("en-GB"));
-var fiFIParser = factory.GetParser(CultureInfo.GetCultureInfo("fi-FI"));
 ```
 
 You can also specify a time zone for the parser to use when parsing relative timestamps:
 
 ```csharp
-// Get a culture-specific parser that uses a specific time zone.
-var parser = factory.GetParser(CultureInfo.GetCultureInfo("en-GB"), TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time"));
+// Get a culture-specific parser that uses a specific time zone for relative 
+// timestamp conversion.
+var parser = factory.GetParser(CultureInfo.GetCultureInfo("en-GB"), 
+    TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time"));
 ```
 
-If a parser is not registered for a given culture (or any of its parent cultures), a default parser that uses `CultureInfo.InvariantCulture` will be returned.
-
-If a parser exists for a parent culture but not the requested culture (e.g. a parser registration exists for `en` but not `en-GB`), a copy of the parent culture's parser will be created that uses the requested `CultureInfo` instead.
-
-If the time zone for the resolved parser is different to the requested time zone, a copy of the resolved parser will be created that uses the requested time zone instead.
+If a parser configuration is not registered for a requested culture (or any of its parent cultures), the returned parser will use the default (invariant) base time and time offset keywords when parsing relative timestamps and durations.
 
 
 # Parsing Timestamps
@@ -45,7 +44,9 @@ Both absolute and relative timestamps can be parsed. Absolute timestamps are par
 var date = parser.ConvertToUtcDateTime("2019-11-15T08:56:25.0901821Z");
 ```
 
-Relative timestamps are expressed in the format `base_time [+/- offset]`, where the `base_time` matches one of the keywords defined in the parser's `BaseTimeSettings` property, and the `offset` is a number followed by one of the duration keywords defined in the parser's `TimeOffsetSettings` property. White space inside the expression is ignored and the parser uses case-insensitive matching against the `base_time` and `offset` values.
+Relative timestamps are expressed in the format `base_time [+/- offset]`, where the `base_time` matches one of the keywords defined in the parser's `BaseTimeSettings` property, and the `offset` is a number followed by one of the duration keywords defined in the parser's `TimeOffsetSettings` property (e.g. `3D` for 3 days when using the invariant culture parser). White space inside the expression is ignored and the parser uses case-insensitive matching against the `base_time` and `offset` values. 
+
+> Note that the culture of the parser is also used when parsing offset quantities. For example, when using a parser with the `fi-FI` culture, the parser will expect a comma as a decimal separator when specifying a fractional quantity.
 
 For the default (invariant culture) parser, the following `base_time` values can be used:
 
@@ -184,6 +185,6 @@ private static async Task PrintStartOfMonthAsync() {
 // Pacific Standard Time: 01/02/2024 08:00:00 UTC
 ```
 
-If no value has been set for `RelativityParser.Current` for the current asynchronous context, `RelativityParser.Invariant` will be returned.
+If no value has been set for `RelativityParser.Current` for the current asynchronous context, `RelativityParser.InvariantUtc` will be returned.
 
 In [ASP.NET Core](./src/IntelligentPlant.Relativity.AspNetCore) or [OWIN](./src/IntelligentPlant.Relativity.Owin) web applications, you can use middleware to automatically set `RelativityParser.Current` for each request based on the culture and time zone information specified in the request.
