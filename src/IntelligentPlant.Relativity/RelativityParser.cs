@@ -44,6 +44,10 @@ namespace IntelligentPlant.Relativity {
         /// <remarks>
         /// 
         /// <para>
+        ///   By default, <see cref="Current"/> is set to <see cref="InvariantUtc"/>.
+        /// </para>
+        /// 
+        /// <para>
         ///   The value of <see cref="Current"/> is maintained for the duration of the current 
         ///   asynchronous control flow. This means that you can set its value at the start of an 
         ///   asynchronous call stack and it will be available to all methods that run on the 
@@ -65,10 +69,10 @@ namespace IntelligentPlant.Relativity {
         /// <seealso cref="AsyncLocal{T}"/>
         public static IRelativityParser Current {
             get {
-                return s_current.Value ?? Invariant;
+                return s_current.Value ?? InvariantUtc;
             }
             set {
-                s_current.Value = value ?? Invariant;
+                s_current.Value = value ?? InvariantUtc;
             }
         }
 

@@ -18,13 +18,21 @@ The static [RelativityParser](./src/IntelligentPlant.Relativity/RelativityParser
 To retrieve a parser instance for a specific culture, call the `GetParser` method on the factory:
 
 ```csharp
+// Get culture-specific parsers that use the system's local time zone.
 var enGBParser = factory.GetParser(CultureInfo.GetCultureInfo("en-GB"));
 var fiFIParser = factory.GetParser(CultureInfo.GetCultureInfo("fi-FI"));
 ```
 
+You can also specify a time zone for the parser to use when parsing relative timestamps:
+
+```csharp
+// Get a culture-specific parser that uses a specific time zone.
+var parser = factory.GetParser(CultureInfo.GetCultureInfo("en-GB"), TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time"));
+```
+
 If a parser is not registered for a given culture (or any of its parent cultures), a default parser that uses `CultureInfo.InvariantCulture` will be returned.
 
-If a parser exists for a parent culture but not the requested culture (e.g. a registration exists for `en` but not `en-GB`), a copy of the parent culture's parser will be created that uses the requested `CultureInfo` instead.
+If a parser exists for a parent culture but not the requested culture (e.g. a parser registration exists for `en` but not `en-GB`), a copy of the parent culture's parser will be created that uses the requested `CultureInfo` instead.
 
 If the time zone for the resolved parser is different to the requested time zone, a copy of the resolved parser will be created that uses the requested time zone instead.
 
@@ -69,10 +77,14 @@ Examples:
 * `MONTH` - start of the current month.
 * `YEAR + 3MO` - start of current year plus 3 calendar months.
 
-Base time values are converted to absolute times relative to a given `DateTime`. If no `DateTime` is specified when parsing a timestamp, the current time for the parser's time zone is used. The following example demonstrates how to parse a relative timestamp specifying 6 hours after the start of the current calendar day in the parser's time zone:
+Base time values are converted to absolute times relative to a given `DateTime` origin. If no origin is specified when parsing a timestamp, the current time for the parser's time zone is used::
 
 ```csharp
+// No origin specified; current time for the parser's time zone is used as the origin.
 var date = parser.ConvertToUtcDateTime("DAY+6H");
+
+// Use 10 days ago in the parser's time zone as the origin.
+var date2 = parser.ConvertToUtcDateTime("DAY+6H", parser.TimeZone.GetCurrentTime().AddDays(-10));
 ```
 
 # Parsing Durations
@@ -140,16 +152,6 @@ By default, existing parser registrations are not overwritten. To force registra
 
 ```csharp
 var success = factory.TryRegisterParser(fiFI, replaceExisting: true);
-```
-
-
-# Creating Parsers For Alternative Time Zones
-
-By default, all parsers use the system's local time zone when resolving base dates in relative timestamps. You can explicitly specify a time zone for a parser by passing a `TimeZoneInfo` instance to the `IRelativityParserFactory.GetParser` method:
-
-```csharp
-var parser = factory.GetParser(CultureInfo.GetCultureInfo("en-GB"), TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time"));
-var date = parser.ConvertToUtcDateTime("DAY+6H"); // 6AM today in Pacific Standard Time.
 ```
 
 
