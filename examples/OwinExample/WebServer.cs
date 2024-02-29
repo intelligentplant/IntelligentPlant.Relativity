@@ -2,11 +2,21 @@
 using IntelligentPlant.Relativity.Owin;
 
 using Microsoft.Extensions.Hosting;
+using Microsoft.Owin.Logging;
 
 using Owin;
 
 namespace OwinExample {
     internal sealed class WebServer : BackgroundService {
+
+        private readonly Microsoft.Extensions.Logging.ILoggerFactory _loggerFactory;
+
+
+        public WebServer(Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) {
+            _loggerFactory = loggerFactory;
+        }
+
+
         protected override async Task ExecuteAsync(CancellationToken stoppingToken) {
             var webHostStartOptions = new Microsoft.Owin.Hosting.StartOptions();
 
@@ -25,6 +35,8 @@ namespace OwinExample {
 
 
         private void ConfigureWebHost(IAppBuilder app) {
+            app.SetLoggerFactory(new OwinLoggerFactory(_loggerFactory));
+
             var factory = new RelativityParserFactory();
             app.UseRelativity(factory, new QueryStringTimeZoneProvider(), new RequestHeaderTimeZoneProvider());
 
