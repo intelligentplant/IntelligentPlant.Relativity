@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Text;
 
 namespace IntelligentPlant.Relativity {
 
@@ -127,6 +129,62 @@ namespace IntelligentPlant.Relativity {
             if (timeSpanUnits.All(x => x == null)) {
                 throw new ArgumentException(Resources.Error_AtLeastOneTimeSpanUnitIsRequired);
             }
+        }
+
+
+        /// <summary>
+        /// Gets the defined keywords.
+        /// </summary>
+        /// <returns>
+        ///   The defined keywords.
+        /// </returns>
+        private IEnumerable<KeyValuePair<string, string>> GetDefinedKeywords() {
+            if (Milliseconds != null) {
+                yield return new KeyValuePair<string, string>(nameof(Milliseconds), Milliseconds);
+            }
+            if (Seconds != null) {
+                yield return new KeyValuePair<string, string>(nameof(Seconds), Seconds);
+            }
+            if (Minutes != null) {
+                yield return new KeyValuePair<string, string>(nameof(Minutes), Minutes);
+            }
+            if (Hours != null) {
+                yield return new KeyValuePair<string, string>(nameof(Hours), Hours);
+            }
+            if (Days != null) {
+                yield return new KeyValuePair<string, string>(nameof(Days), Days);
+            }
+            if (Weeks != null) {
+                yield return new KeyValuePair<string, string>(nameof(Weeks), Weeks);
+            }
+            if (Months != null) {
+                yield return new KeyValuePair<string, string>(nameof(Months), Months);
+            }
+            if (Years != null) {
+                yield return new KeyValuePair<string, string>(nameof(Years), Years);
+            }
+        }
+
+
+        /// <inheritdoc/>
+        public override string ToString() {
+            var sb = new StringBuilder();
+
+            sb.Append("{");
+            var first = true;
+            foreach (var keyword in GetDefinedKeywords()) {
+                if (first) {
+                    first = false;
+                    sb.Append(' ');
+                }
+                else {
+                    sb.Append(", ");
+                }
+                sb.Append($"\"{keyword.Key}\": \"{keyword.Value}\"");
+            }
+            sb.Append(" }");
+
+            return sb.ToString();
         }
 
     }

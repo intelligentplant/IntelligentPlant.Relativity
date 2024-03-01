@@ -1,4 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Text;
 
 namespace IntelligentPlant.Relativity {
 
@@ -122,6 +125,62 @@ namespace IntelligentPlant.Relativity {
             CurrentWeek = string.IsNullOrWhiteSpace(currentWeek) ? null : currentWeek;
             CurrentMonth = string.IsNullOrWhiteSpace(currentMonth) ? null : currentMonth;
             CurrentYear = string.IsNullOrWhiteSpace(currentYear) ? null : currentYear;
+        }
+
+
+        /// <summary>
+        /// Gets the defined keywords.
+        /// </summary>
+        /// <returns>
+        ///   The defined keywords.
+        /// </returns>
+        private IEnumerable<KeyValuePair<string, string>> GetDefinedKeywords() {
+            if (Now != null) {
+                yield return new KeyValuePair<string, string>(nameof(Now), Now);
+            }
+            if (CurrentSecond != null) {
+                yield return new KeyValuePair<string, string>(nameof(CurrentSecond), CurrentSecond);
+            }
+            if (CurrentMinute != null) {
+                yield return new KeyValuePair<string, string>(nameof(CurrentMinute), CurrentMinute);
+            }
+            if (CurrentHour != null) {
+                yield return new KeyValuePair<string, string>(nameof(CurrentHour), CurrentHour);
+            }
+            if (CurrentDay != null) {
+                yield return new KeyValuePair<string, string>(nameof(CurrentDay), CurrentDay);
+            }
+            if (CurrentWeek != null) {
+                yield return new KeyValuePair<string, string>(nameof(CurrentWeek), CurrentWeek);
+            }
+            if (CurrentMonth != null) {
+                yield return new KeyValuePair<string, string>(nameof(CurrentMonth), CurrentMonth);
+            }
+            if (CurrentYear != null) {
+                yield return new KeyValuePair<string, string>(nameof(CurrentYear), CurrentYear);
+            }
+        }
+
+
+        /// <inheritdoc/>
+        public override string ToString() {
+            var sb = new StringBuilder();
+
+            sb.Append("{");
+            var first = true;
+            foreach (var keyword in GetDefinedKeywords()) {
+                if (first) {
+                    first = false;
+                    sb.Append(' ');
+                }
+                else {
+                    sb.Append(", ");
+                }
+                sb.Append($"\"{keyword.Key}\": \"{keyword.Value}\"");
+            }
+            sb.Append(" }");
+
+            return sb.ToString();
         }
 
     }
