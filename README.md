@@ -48,7 +48,7 @@ Relative timestamps are expressed in the format `base_time [+/- offset]`, where 
 
 > Note that the culture of the parser is also used when parsing offset quantities. For example, when using a parser with the `fi-FI` culture, the parser will expect a comma as a decimal separator when specifying a fractional quantity.
 
-For the default (invariant culture) parser, the following `base_time` values can be used:
+For invariant and English (`en`) culture parsers, the following `base_time` values can be used:
 
 * `NOW` (or `*`) - current time.
 * `SECOND` - start of the current second.
@@ -59,7 +59,7 @@ For the default (invariant culture) parser, the following `base_time` values can
 * `MONTH` - start of the current month.
 * `YEAR` - start of the current year.
 
-The following units can be used in relative timestamps with the default parser. Both whole and fractional quantities are allowed unless otherwise stated:
+The following units can be used in relative timestamps with invariant and English-language parsers. Both whole and fractional quantities are allowed unless otherwise stated:
 
 * `MS` - milliseconds.
 * `S` - seconds.
@@ -96,7 +96,7 @@ The parser will parse literal time spans, as well as duration expressions. Liter
 var timeSpan = parser.ConvertToTimeSpan("3.19:03:27.775");
 ```
 
-Duration expressions are expressed in the same way as an offset on a relative timestamp i.e. a quantity followed by one of the duration keywords defined in the `TimeOffsetSettings` property of the parser. The following units can be used in duration expressions with the default (invariant culture) parser. Both whole and fractional quantities are allowed unless otherwise stated:
+Duration expressions are expressed in the same way as an offset on a relative timestamp i.e. a quantity followed by one of the duration keywords defined in the `TimeOffsetSettings` property of the parser. The following units can be used in duration expressions with invariant and English-language parsers. Both whole and fractional quantities are allowed unless otherwise stated:
 
 * `MS` - milliseconds.
 * `S` - seconds.
@@ -115,11 +115,11 @@ Examples:
 
 # Registering Parsers
 
-A default set of well-known parsers are registered with `RelativityParserFactory` when the factory is created. The [WellKnownParsers.csv](./src/IntelligentPlant.Relativity/WellKnownParsers.csv) file defines the cultures and keywords that are automatically registered.
+A default set of well-known parser configurations are automatically registered with `RelativityParserFactory` when the factory is created. The [WellKnownParsers.csv](./src/IntelligentPlant.Relativity/WellKnownParsers.csv) file defines the cultures and keywords that are registered.
 
 Additional parser configurations can also be passed to the `RelativityParserFactory` constructor; these configurations will override any matching default parser registrations. The invariant culture parsers cannot be overridden.
 
-To register a parser for a given culture, call the `IRelativityParserFactory.TryRegisterParser` method:
+To manually register a parser configuration for a given culture, call the `IRelativityParserFactory.TryRegisterParser` method:
 
 ```csharp
 var fiFI = new RelativityParserConfiguration() {
