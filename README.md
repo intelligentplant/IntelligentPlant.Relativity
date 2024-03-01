@@ -139,7 +139,7 @@ var fiFI = new RelativityParserConfiguration() {
         seconds: "S",
         minutes: "M",
         hours: "T",
-        days: "P",
+        days: "VK", // Vuorokausi i.e. a 24-hour period of time.
         weeks: "VI",
         months: "KK",
         years: "V"
