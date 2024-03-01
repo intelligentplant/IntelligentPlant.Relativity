@@ -20,9 +20,9 @@ namespace IntelligentPlant.Relativity {
 
 
         /// <summary>
-        /// The default parsers, indexed by culture name (e.g. en-GB).
+        /// The default parser configurations, indexed by culture name (e.g. en-GB).
         /// </summary>
-        private readonly ConcurrentDictionary<string, IRelativityParser> _defaultParsers = new ConcurrentDictionary<string, IRelativityParser>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, RelativityParserConfiguration> _defaultParsers = new ConcurrentDictionary<string, RelativityParserConfiguration>(StringComparer.OrdinalIgnoreCase);
 
 
         /// <summary>
@@ -35,7 +35,7 @@ namespace IntelligentPlant.Relativity {
         /// </param>
         public RelativityParserFactory(IEnumerable<RelativityParserConfiguration>? parsers) {
             foreach (var config in WellKnownParsers.GetParserDefinitions()) {
-                _defaultParsers[config.CultureInfo.Name] = new Parser(config, null);
+                _defaultParsers[config.CultureInfo.Name] = config;
             }
 
             if (parsers != null) {
@@ -44,7 +44,7 @@ namespace IntelligentPlant.Relativity {
                         continue;
                     }
                     Validator.ValidateObject(config, new ValidationContext(config), true);
-                    _defaultParsers[config.CultureInfo.Name] = new Parser(config, null);
+                    _defaultParsers[config.CultureInfo.Name] = config;
                 }
             }
         }
@@ -68,7 +68,7 @@ namespace IntelligentPlant.Relativity {
                 throw new ArgumentException(Resources.Error_CannotReplaceInvariantCultureParser, nameof(config));
             }
 
-            var registered = _defaultParsers.AddOrUpdate(config.CultureInfo.Name, _ => new Parser(config, null), (_, v) => replaceExisting ? new Parser(config, null) : v);
+            var registered = _defaultParsers.AddOrUpdate(config.CultureInfo.Name, _ => config, (_, existing) => replaceExisting ? config : existing);
             return registered == config;
         }
 
@@ -108,7 +108,7 @@ namespace IntelligentPlant.Relativity {
                 ? RelativityParser.Invariant
                 : timeZone.Equals(TimeZoneInfo.Utc)
                     ? RelativityParser.InvariantUtc
-                    : Clone(RelativityParser.Invariant, null, timeZone);
+                    : CreateParser(RelativityParser.Invariant, null, timeZone);
         }
 
 
@@ -152,56 +152,59 @@ namespace IntelligentPlant.Relativity {
                         // requested (e.g. "en" instead of "en-GB"). We'll create and return an 
                         // entry for the specific culture that was requested, in case e.g. the 
                         // specific culture uses a different first day of week to the parent culture.
-                        return Clone(p, cultureInfo, timeZone);
+                        return CreateParser(p, cultureInfo, timeZone);
                     }
 
                     // We found an exact match for the requested culture.
-                    return p.TimeZone.Equals(timeZone)
-                        ? p
-                        : Clone(p, null, timeZone);
+                    return CreateParser(p, null, timeZone);
                 }
 
                 ci = ci.Parent;
             }
 
-            return Clone(RelativityParser.InvariantUtc, cultureInfo, timeZone);
+            return CreateParser(RelativityParser.InvariantUtc, cultureInfo, timeZone);
         }
 
 
         /// <summary>
-        /// Clones an <see cref="IRelativityParser"/>, optionally specifying new culture and time 
-        /// zone settings.
+        /// Creates an <see cref="IRelativityParser"/> from a <see cref="RelativityParserConfiguration"/>.
         /// </summary>
-        /// <param name="parser">
-        ///   The parser to clone.
+        /// <param name="configuration">
+        ///   The parser configuration.
         /// </param>
         /// <param name="cultureInfo">
-        ///   The new culture to use for the cloned parser, or <see langword="null"/> to use the 
-        ///   existing parser culture.
+        ///   The culture to use for the parser, or <see langword="null"/> to use the culture 
+        ///   specified in the <paramref name="configuration"/>.
         /// </param>
         /// <param name="timeZone">
-        ///   The new time zone to use for the cloned parser, or <see langword="null"/> to use the 
-        ///   existing parser time zone.
+        ///   The time zone to use for the parser.
         /// </param>
         /// <returns>
         ///   A new <see cref="IRelativityParser"/> instance.
         /// </returns>
-        private IRelativityParser Clone(IRelativityParser parser, CultureInfo? cultureInfo, TimeZoneInfo? timeZone) {
-            if (parser is ParserBase baseParser) {
-                return new Parser(
-                    cultureInfo ?? parser.CultureInfo,
-                    timeZone ?? parser.TimeZone,
-                    parser.BaseTimeSettings,
-                    parser.TimeOffsetSettings,
-                    baseParser.RelativeDateRegex,
-                    baseParser.DurationRegex);
-            }
+        private IRelativityParser CreateParser(RelativityParserConfiguration configuration, CultureInfo? cultureInfo, TimeZoneInfo timeZone) {
+            return new Parser(cultureInfo ?? configuration.CultureInfo, timeZone, configuration.BaseTimeSettings, configuration.TimeOffsetSettings);
+        }
 
-            return new Parser(new RelativityParserConfiguration() {
-                CultureInfo = cultureInfo ?? parser.CultureInfo,
-                BaseTimeSettings = parser.BaseTimeSettings,
-                TimeOffsetSettings = parser.TimeOffsetSettings
-            }, timeZone ?? parser.TimeZone);
+
+        /// <summary>
+        /// Creates an <see cref="IRelativityParser"/> from an existing <see cref="IRelativityParser"/>.
+        /// </summary>
+        /// <param name="existing">
+        ///   The existing parser.
+        /// </param>
+        /// <param name="cultureInfo">
+        ///   The culture to use for the parser, or <see langword="null"/> to use the culture 
+        ///   specified in the existing parser.
+        /// </param>
+        /// <param name="timeZone">
+        ///   The time zone to use for the parser.
+        /// </param>
+        /// <returns>
+        ///   A new <see cref="IRelativityParser"/> instance.
+        /// </returns>
+        private IRelativityParser CreateParser(IRelativityParser existing, CultureInfo? cultureInfo, TimeZoneInfo timeZone) {
+            return new Parser(cultureInfo ?? existing.CultureInfo, timeZone, existing.BaseTimeSettings, existing.TimeOffsetSettings);
         }
 
     }
