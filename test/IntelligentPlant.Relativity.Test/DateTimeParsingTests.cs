@@ -301,23 +301,21 @@ namespace IntelligentPlant.Relativity.Test {
 
 
         [DataTestMethod]
-        [DataRow("", true)] // Should fall back to invariant culture
-        [DataRow("en-US", true)]
-        [DataRow("en-GB", true)]
-        [DataRow("fi-FI", false)] // Should fall back to invariant culture
-        public void RelativeDateTimeWithOffsetShouldBeParsed(string culture, bool verifyParserCulture) {
+        [DataRow("")] // Should fall back to invariant culture
+        [DataRow("en-US")]
+        [DataRow("en-GB")]
+        [DataRow("fi-FI")] // Should use keywords from invariant culture but number formatting from fi-FI
+        public void RelativeDateTimeWithOffsetShouldBeParsed(string culture) {
             var factory = new RelativityParserFactory();
 
             var parser = factory.GetParser(culture);
             Assert.IsNotNull(parser);
 
-            if (verifyParserCulture) {
-                if (string.IsNullOrWhiteSpace(culture)) {
-                    Assert.AreEqual(CultureInfo.InvariantCulture.Name, parser.CultureInfo.Name);
-                }
-                else {
-                    Assert.AreEqual(culture, parser.CultureInfo.Name);
-                }
+            if (string.IsNullOrWhiteSpace(culture)) {
+                Assert.AreEqual(CultureInfo.InvariantCulture.Name, parser.CultureInfo.Name);
+            }
+            else {
+                Assert.AreEqual(culture, parser.CultureInfo.Name);
             }
 
             var baseTimeTypes = new[] { 
@@ -343,23 +341,21 @@ namespace IntelligentPlant.Relativity.Test {
 
 
         [DataTestMethod]
-        [DataRow("", true)] // Should fall back to invariant culture
-        [DataRow("en-US", true)]
-        [DataRow("en-GB", true)]
-        [DataRow("fi-FI", false)] // Should fall back to invariant culture
-        public void DurationShouldBeParsed(string culture, bool verifyCulture) {
+        [DataRow("")] // Should fall back to invariant culture
+        [DataRow("en-US")]
+        [DataRow("en-GB")]
+        [DataRow("fi-FI")] // Should use keywords from invariant culture but number formatting from fi-FI
+        public void DurationShouldBeParsed(string culture) {
             var factory = new RelativityParserFactory();
 
             var parser = factory.GetParser(culture);
             Assert.IsNotNull(parser);
 
-            if (verifyCulture) {
-                if (string.IsNullOrWhiteSpace(culture)) {
-                    Assert.AreEqual(CultureInfo.InvariantCulture.Name, parser.CultureInfo.Name);
-                }
-                else {
-                    Assert.AreEqual(culture, parser.CultureInfo.Name);
-                }
+            if (string.IsNullOrWhiteSpace(culture)) {
+                Assert.AreEqual(CultureInfo.InvariantCulture.Name, parser.CultureInfo.Name);
+            }
+            else {
+                Assert.AreEqual(culture, parser.CultureInfo.Name);
             }
 
             string unparsed;
