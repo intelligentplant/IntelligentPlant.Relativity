@@ -25,6 +25,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "common", "common", "{072551
 		build.sh = build.sh
 		Directory.Build.props = Directory.Build.props
 		Directory.Build.targets = Directory.Build.targets
+		Directory.Packages.props = Directory.Packages.props
 		LICENSE = LICENSE
 		README.md = README.md
 	EndProjectSection
@@ -34,15 +35,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{E59EB304
 		build\version.json = build\version.json
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntelligentPlant.Relativity.DependencyInjection", "src\IntelligentPlant.Relativity.DependencyInjection\IntelligentPlant.Relativity.DependencyInjection.csproj", "{E1F7A2F6-99CF-4BC1-8F22-26F94C84619F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntelligentPlant.Relativity.DependencyInjection", "src\IntelligentPlant.Relativity.DependencyInjection\IntelligentPlant.Relativity.DependencyInjection.csproj", "{E1F7A2F6-99CF-4BC1-8F22-26F94C84619F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntelligentPlant.Relativity.AspNetCore", "src\IntelligentPlant.Relativity.AspNetCore\IntelligentPlant.Relativity.AspNetCore.csproj", "{3FE6A227-F5FA-4194-8920-0014EC4D8F2D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntelligentPlant.Relativity.AspNetCore", "src\IntelligentPlant.Relativity.AspNetCore\IntelligentPlant.Relativity.AspNetCore.csproj", "{3FE6A227-F5FA-4194-8920-0014EC4D8F2D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspNetCoreExample", "examples\AspNetCoreExample\AspNetCoreExample.csproj", "{EFED941F-2F16-4CE9-B0C8-DB4BAA9009F0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspNetCoreExample", "examples\AspNetCoreExample\AspNetCoreExample.csproj", "{EFED941F-2F16-4CE9-B0C8-DB4BAA9009F0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntelligentPlant.Relativity.Owin", "src\IntelligentPlant.Relativity.Owin\IntelligentPlant.Relativity.Owin.csproj", "{BACF0A00-BC9B-4064-8FED-805C16E68A34}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntelligentPlant.Relativity.Owin", "src\IntelligentPlant.Relativity.Owin\IntelligentPlant.Relativity.Owin.csproj", "{BACF0A00-BC9B-4064-8FED-805C16E68A34}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OwinExample", "examples\OwinExample\OwinExample.csproj", "{8DE658A8-6161-4F56-9504-824E85686662}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OwinExample", "examples\OwinExample\OwinExample.csproj", "{8DE658A8-6161-4F56-9504-824E85686662}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
