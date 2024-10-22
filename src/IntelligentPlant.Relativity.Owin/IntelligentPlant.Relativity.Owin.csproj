@@ -4,6 +4,9 @@
     <TargetFramework>net48</TargetFramework>
     <LangVersion>9.0</LangVersion>
     <Nullable>enable</Nullable>
+    <Description>Provides extensions methods for registering IntelligentPlant.Relativity services with a .NET Framework OWIN application.</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,6 +17,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\IntelligentPlant.Relativity\IntelligentPlant.Relativity.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="README.md" />
   </ItemGroup>
 
 </Project>
