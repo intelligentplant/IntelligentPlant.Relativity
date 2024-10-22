@@ -23,7 +23,7 @@ namespace IntelligentPlant.Relativity.AspNetCore {
         /// <returns>
         ///   The time zone to use for the request.
         /// </returns>
-        public abstract Task<TimeZoneInfo?> GetTimeZoneAsync(HttpContext context);
+        public abstract ValueTask<TimeZoneInfo?> GetTimeZoneAsync(HttpContext context);
 
     }
 }

@@ -26,7 +26,7 @@ namespace IntelligentPlant.Relativity.Owin {
         /// <returns>
         ///   The time zone to use for the request.
         /// </returns>
-        public abstract Task<TimeZoneInfo?> GetTimeZoneAsync(IOwinContext context);
+        public abstract ValueTask<TimeZoneInfo?> GetTimeZoneAsync(IOwinContext context);
 
 
         /// <summary>

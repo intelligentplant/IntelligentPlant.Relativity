@@ -36,8 +36,8 @@ namespace IntelligentPlant.Relativity.Owin {
 
 
         /// <inheritdoc/>
-        public override Task<TimeZoneInfo?> GetTimeZoneAsync(IOwinContext context) {
-            return Task.FromResult(GetTimeZoneById(context.Request.Cookies[CookieName]));
+        public override ValueTask<TimeZoneInfo?> GetTimeZoneAsync(IOwinContext context) {
+            return new ValueTask<TimeZoneInfo?>(GetTimeZoneById(context.Request.Cookies[CookieName]));
         }
 
 

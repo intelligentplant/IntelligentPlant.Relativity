@@ -118,7 +118,7 @@ namespace IntelligentPlant.Relativity.AspNetCore {
         }
 
 
-        [LoggerMessage(0, LogLevel.Debug, "Relativity parser settings: Culture={culture}, Time Zone={timeZone}")]
+        [LoggerMessage(1, LogLevel.Debug, "Relativity parser settings: Culture={culture}, Time Zone={timeZone}")]
         partial void LogRelativityParserSet(string culture, string timeZone);
 
     }

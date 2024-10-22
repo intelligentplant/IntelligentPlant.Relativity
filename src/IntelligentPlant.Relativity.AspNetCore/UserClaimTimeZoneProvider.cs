@@ -36,17 +36,17 @@ namespace IntelligentPlant.Relativity.AspNetCore {
 
 
         /// <inheritdoc/>
-        public override Task<TimeZoneInfo?> GetTimeZoneAsync(HttpContext context) {
+        public override ValueTask<TimeZoneInfo?> GetTimeZoneAsync(HttpContext context) {
             if (context.User == null || !context.User.Identities.All(x => x.IsAuthenticated)) {
-                return Task.FromResult<TimeZoneInfo?>(null);
+                return new ValueTask<TimeZoneInfo?>((TimeZoneInfo?) null);
             }
 
             var claim = context.User.FindFirstValue(ClaimType);
             if (string.IsNullOrWhiteSpace(claim) || !TimeZoneInfo.TryFindSystemTimeZoneById(claim, out var tz)) {
-                return Task.FromResult<TimeZoneInfo?>(null);
+                return new ValueTask<TimeZoneInfo?>((TimeZoneInfo?) null);
             }
 
-            return Task.FromResult<TimeZoneInfo?>(tz);
+            return new ValueTask<TimeZoneInfo?>(tz);
         }
 
     }

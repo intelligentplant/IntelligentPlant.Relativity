@@ -33,12 +33,12 @@ namespace IntelligentPlant.Relativity.AspNetCore {
 
 
         /// <inheritdoc/>
-        public override Task<TimeZoneInfo?> GetTimeZoneAsync(HttpContext context) {
+        public override ValueTask<TimeZoneInfo?> GetTimeZoneAsync(HttpContext context) {
             if (context.Request.Cookies.TryGetValue(CookieName, out var tzId) && !string.IsNullOrWhiteSpace(tzId) && TimeZoneInfo.TryFindSystemTimeZoneById(tzId!, out var tz)) {
-                return Task.FromResult<TimeZoneInfo?>(tz);
+                return new ValueTask<TimeZoneInfo?>(tz);
             }
 
-            return Task.FromResult<TimeZoneInfo?>(null);
+            return new ValueTask<TimeZoneInfo?>((TimeZoneInfo?) null);
         }
 
 
