@@ -12,6 +12,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Owin" />
     <PackageReference Include="System.Net.Http" />
+    <PackageReference Include="System.Threading.Tasks.Extensions" />
     <PackageReference Include="TimeZoneConverter" />
   </ItemGroup>
 
