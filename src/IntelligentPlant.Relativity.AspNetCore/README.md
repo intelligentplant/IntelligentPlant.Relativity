@@ -3,14 +3,17 @@
 This package provides ASP.NET Core middleware for setting `RelativityParser.Current` for an HTTP request. This allows timestamps and durations to be parsed anywhere in the request using `RelativityParser.Current`.
 
 
-# Configuration
+# Getting Started
 
 ## Registering Time Zone Providers
 
-The middleware uses time zone providers (derived from [TimeZoneProvider](./TimeZoneProvider.cs)) to determine the time zone to use when configuring the Relativity parser for the request. Use the extension methods defined in [RelativityBuilderExtensions](./RelativityBuilderExtensions.cs) to register time zone providers for the middleware:
+The middleware uses time zone providers (derived from `TimeZoneProvider`) to determine the time zone to use when configuring the Relativity parser for the request. Use the extension methods defined in `RelativityBuilderExtensions` to register time zone providers for the middleware:
 
 ```csharp
-builder.AddQueryStringTimeZoneProvider()
+services.AddRelativity()
+    // Set time zone using 'tz' query string parameter
+    .AddQueryStringTimeZoneProvider()
+    // Set time zone using 'X-TimeZone' request header
     .AddRequestHeaderTimeZoneProvider();
 ```
 

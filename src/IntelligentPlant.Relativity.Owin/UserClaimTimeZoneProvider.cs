@@ -38,13 +38,13 @@ namespace IntelligentPlant.Relativity.Owin {
 
 
         /// <inheritdoc/>
-        public override Task<TimeZoneInfo?> GetTimeZoneAsync(IOwinContext context) {
+        public override ValueTask<TimeZoneInfo?> GetTimeZoneAsync(IOwinContext context) {
             if (context.Authentication.User == null || !context.Authentication.User.Identities.All(x => x.IsAuthenticated)) {
-                return Task.FromResult<TimeZoneInfo?>(null);
+                return new ValueTask<TimeZoneInfo?>((TimeZoneInfo?) null);
             }
 
             var claim = context.Authentication.User.FindFirst(ClaimType);
-            return Task.FromResult(GetTimeZoneById(claim?.Value));
+            return new ValueTask<TimeZoneInfo?>(GetTimeZoneById(claim?.Value));
         }
     }
 }

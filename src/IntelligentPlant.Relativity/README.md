@@ -5,17 +5,17 @@ A C# library for converting absolute and relative timestamp strings into UTC `Da
 
 # Getting Started
 
-The [IRelativityParser](./src/IntelligentPlant.Relativity/IRelativityParser.cs) interface defines a parser that can be used to convert relative timestamps and durations into absolute `DateTime` and `TimeSpan` instances. 
+The `IRelativityParser` interface defines a parser that can be used to convert relative timestamps and durations into absolute `DateTime` and `TimeSpan` instances. 
 
 Ain `IRelativityParser` parses timestamps and durations using a given `CultureInfo` and `TimeZoneInfo`. The `CultureInfo` controls how absolute timestamps and `TimeSpan` literals are parsed, as well as providing keywords that define the base times and time periods that can be used when defining relative timestamps or durations. The `TimeZoneInfo` controls the time zone that is used when converting relative timestamps to absolute timestamps.
 
-The static [RelativityParser](./src/IntelligentPlant.Relativity/RelativityParser.cs) class provides quick access to several built-in parsers:
+The static `RelativityParser` class provides quick access to several built-in parsers:
 
 * `RelativityParser.Invariant` - a parser that uses `CultureInfo.InvariantCulture` and the system's local time zone when converting relative timestamps to absolute timestamps.
 * `RelativityParser.InvariantUtc` - a parser that uses `CultureInfo.InvariantCulture` and UTC when converting relative timestamps to absolute timestamps.
 * `RelativityParser.Current` - the parser for the current asynchronous context. See [Asynchronous Control Flow](#asynchronous-control-flow) for more information.
 
-The [IRelativityParserFactory](./src/IntelligentPlant.Relativity/IRelativityParserFactory.cs) interface defines a factory for creating custom `IRelativityParser` instances. The default implementation of `IRelativityParserFactory` is [RelativityParserFactory](./src/IntelligentPlant.Relativity/RelativityParserFactory.cs). You can use the static `RelativityParserFactory.Default` property to obtain the default `IRelativityParserFactory` instance, or create your own instance of `RelativityParserFactory` directly.
+The `IRelativityParserFactory` interface defines a factory for creating custom `IRelativityParser` instances. The default implementation of `IRelativityParserFactory` is `RelativityParserFactory`. You can use the static `RelativityParserFactory.Default` property to obtain the default `IRelativityParserFactory` instance, or create your own instance of `RelativityParserFactory` directly.
 
 Parser configurations for additional cultures can be registered with the `IRelativityParserFactory`. To retrieve a parser instance for a specific culture, call the `GetParser` method on the factory:
 
@@ -44,7 +44,7 @@ Both absolute and relative timestamps can be parsed. Absolute timestamps are par
 var date = parser.ConvertToUtcDateTime("2019-11-15T08:56:25.0901821Z");
 ```
 
-Relative timestamps are expressed in the format `base_time [+/- offset]`, where the `base_time` matches one of the keywords defined in the parser's `BaseTimeSettings` property, and the `offset` is a number followed by one of the duration keywords defined in the parser's `TimeOffsetSettings` property (e.g. `3D` for 3 days when using the invariant culture parser). White space inside the expression is ignored and the parser uses case-insensitive matching against the `base_time` and `offset` values
+Relative timestamps are expressed in the format `base_time [+/- offset]`, where the `base_time` matches one of the keywords defined in the parser's `BaseTimeSettings` property, and the `offset` is a number followed by one of the duration keywords defined in the parser's `TimeOffsetSettings` property (e.g. `3D` for 3 days when using the invariant culture parser). White space inside the expression is ignored and the parser uses case-insensitive matching against the `base_time` and `offset` values. 
 
 For invariant and English (`en`) culture parsers, the following `base_time` values can be used:
 
@@ -91,7 +91,8 @@ Base time values are converted to absolute times relative to a given `DateTime` 
 var date = parser.ConvertToUtcDateTime("DAY+6H");
 
 // Use 10 days ago in the parser's time zone as the origin.
-var date2 = parser.ConvertToUtcDateTime("DAY+6H", parser.TimeZone.GetCurrentTime().AddDays(-10));
+var date2 = parser.ConvertToUtcDateTime("DAY+6H", 
+    parser.TimeZone.GetCurrentTime().AddDays(-10));
 ```
 
 # Parsing Durations
@@ -127,7 +128,7 @@ Examples:
 
 # Registering Parsers
 
-A default set of well-known parser configurations are automatically registered with `RelativityParserFactory` when the factory is created. The [WellKnownParsers.csv](./src/IntelligentPlant.Relativity/WellKnownParsers.csv) file defines the cultures and keywords that are registered.
+A default set of well-known parser configurations are automatically registered with `RelativityParserFactory` when the factory is created.
 
 Additional parser configurations can also be passed to the `RelativityParserFactory` constructor; these configurations will override any matching default parser registrations. The invariant culture parsers cannot be overridden.
 
@@ -199,4 +200,4 @@ private static async Task PrintStartOfMonthAsync() {
 
 If no value has been set for `RelativityParser.Current` for the current asynchronous context, `RelativityParser.InvariantUtc` will be returned.
 
-In [ASP.NET Core](./src/IntelligentPlant.Relativity.AspNetCore) or [OWIN](./src/IntelligentPlant.Relativity.Owin) web applications, you can use middleware to automatically set `RelativityParser.Current` for each request based on the culture and time zone information specified in the request.
+In [ASP.NET Core](https://www.nuget.org/packages/IntelligentPlant.Relativity.AspNetCore) or [OWIN](https://www.nuget.org/packages/IntelligentPlant.Relativity.Owin) web applications, you can use middleware to automatically set `RelativityParser.Current` for each request based on the culture and time zone information specified in the request.

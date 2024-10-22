@@ -27,11 +27,18 @@ namespace IntelligentPlant.Relativity {
 
 
         /// <summary>
-        /// Tries to register a default parser
+        /// Tries to register a parser
         /// </summary>
-        /// <param name="parser"></param>
-        /// <param name="replaceExisting"></param>
-        /// <returns></returns>
+        /// <param name="parser">
+        ///   The parser configuration.
+        /// </param>
+        /// <param name="replaceExisting">
+        ///   Specifies if the parser should replace an existing parser with the same culture.
+        /// </param>
+        /// <returns>
+        ///   <see langword="true"/> if the parser was successfully registered; otherwise, 
+        ///   <see langword="false"/>.
+        /// </returns>
         bool TryRegisterParser(RelativityParserConfiguration parser, bool replaceExisting = false);
 
     }

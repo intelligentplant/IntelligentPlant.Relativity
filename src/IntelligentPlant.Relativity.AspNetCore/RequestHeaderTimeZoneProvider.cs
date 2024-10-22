@@ -38,7 +38,7 @@ namespace IntelligentPlant.Relativity.AspNetCore {
 
 
         /// <inheritdoc/>
-        public override Task<TimeZoneInfo?> GetTimeZoneAsync(HttpContext context) {
+        public override ValueTask<TimeZoneInfo?> GetTimeZoneAsync(HttpContext context) {
             var tzHeaderValsRaw = context.Request.Headers.GetCommaSeparatedValues(HeaderName);
             if (tzHeaderValsRaw.Length > 0 && StringWithQualityHeaderValue.TryParseList(tzHeaderValsRaw, out var tzHeaderVals)) {
                 foreach (var item in tzHeaderVals.OrderByDescending(x => x.Quality)) {
@@ -46,13 +46,13 @@ namespace IntelligentPlant.Relativity.AspNetCore {
                         continue;
                     }
                     if (TimeZoneInfo.TryFindSystemTimeZoneById(item.Value.Value, out var tz)) {
-                        return Task.FromResult<TimeZoneInfo?>(tz);
+                        return new ValueTask<TimeZoneInfo?>(tz);
                     }
                 }
             }
 
 
-            return Task.FromResult<TimeZoneInfo?>(null);
+            return new ValueTask<TimeZoneInfo?>((TimeZoneInfo?) null);
         }
 
     }

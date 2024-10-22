@@ -43,7 +43,7 @@ namespace IntelligentPlant.Relativity.Owin {
 
 
         /// <inheritdoc/>
-        public override Task<TimeZoneInfo?> GetTimeZoneAsync(IOwinContext context) {
+        public override ValueTask<TimeZoneInfo?> GetTimeZoneAsync(IOwinContext context) {
             var tzHeaderValsRaw = context.Request.Headers.GetCommaSeparatedValues(HeaderName);
             if (tzHeaderValsRaw?.Count > 0) {
                 var tzHeaderVals = new List<StringWithQualityHeaderValue>();
@@ -62,14 +62,14 @@ namespace IntelligentPlant.Relativity.Owin {
                     try {
                         var tz = GetTimeZoneById(item.Value!);
                         if (tz != null) {
-                            return Task.FromResult<TimeZoneInfo?>(tz);
+                            return new ValueTask<TimeZoneInfo?>(tz);
                         }
                     }
                     catch { }
                 }
             }
 
-            return Task.FromResult<TimeZoneInfo?>(null);
+            return new ValueTask<TimeZoneInfo?>((TimeZoneInfo?) null);
         }
 
     }
