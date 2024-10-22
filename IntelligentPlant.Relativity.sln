@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29326.143
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32319.34
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{10A2813D-C970-4F6F-9A59-94F7C972257F}"
 EndProject
@@ -15,17 +15,35 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntelligentPlant.Relativity
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntelligentPlant.Relativity.Test", "test\IntelligentPlant.Relativity.Test\IntelligentPlant.Relativity.Test.csproj", "{8A2958F6-9128-4A82-B1B0-B1ACCEB33D18}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "misc", "misc", "{072551EE-CB29-4F5C-90BC-C3D1C968229D}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "common", "common", "{072551EE-CB29-4F5C-90BC-C3D1C968229D}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
+		build.cake = build.cake
 		build.ps1 = build.ps1
+		build.sh = build.sh
 		Directory.Build.props = Directory.Build.props
 		Directory.Build.targets = Directory.Build.targets
+		Directory.Packages.props = Directory.Packages.props
 		LICENSE = LICENSE
 		README.md = README.md
 	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{E59EB304-DF61-4679-A6B4-32909C949815}"
+	ProjectSection(SolutionItems) = preProject
+		build\version.json = build\version.json
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntelligentPlant.Relativity.DependencyInjection", "src\IntelligentPlant.Relativity.DependencyInjection\IntelligentPlant.Relativity.DependencyInjection.csproj", "{E1F7A2F6-99CF-4BC1-8F22-26F94C84619F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntelligentPlant.Relativity.AspNetCore", "src\IntelligentPlant.Relativity.AspNetCore\IntelligentPlant.Relativity.AspNetCore.csproj", "{3FE6A227-F5FA-4194-8920-0014EC4D8F2D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspNetCoreExample", "examples\AspNetCoreExample\AspNetCoreExample.csproj", "{EFED941F-2F16-4CE9-B0C8-DB4BAA9009F0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntelligentPlant.Relativity.Owin", "src\IntelligentPlant.Relativity.Owin\IntelligentPlant.Relativity.Owin.csproj", "{BACF0A00-BC9B-4064-8FED-805C16E68A34}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OwinExample", "examples\OwinExample\OwinExample.csproj", "{8DE658A8-6161-4F56-9504-824E85686662}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +63,26 @@ Global
 		{8A2958F6-9128-4A82-B1B0-B1ACCEB33D18}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8A2958F6-9128-4A82-B1B0-B1ACCEB33D18}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8A2958F6-9128-4A82-B1B0-B1ACCEB33D18}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E1F7A2F6-99CF-4BC1-8F22-26F94C84619F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1F7A2F6-99CF-4BC1-8F22-26F94C84619F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1F7A2F6-99CF-4BC1-8F22-26F94C84619F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1F7A2F6-99CF-4BC1-8F22-26F94C84619F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3FE6A227-F5FA-4194-8920-0014EC4D8F2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3FE6A227-F5FA-4194-8920-0014EC4D8F2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3FE6A227-F5FA-4194-8920-0014EC4D8F2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3FE6A227-F5FA-4194-8920-0014EC4D8F2D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EFED941F-2F16-4CE9-B0C8-DB4BAA9009F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EFED941F-2F16-4CE9-B0C8-DB4BAA9009F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EFED941F-2F16-4CE9-B0C8-DB4BAA9009F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EFED941F-2F16-4CE9-B0C8-DB4BAA9009F0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BACF0A00-BC9B-4064-8FED-805C16E68A34}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BACF0A00-BC9B-4064-8FED-805C16E68A34}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BACF0A00-BC9B-4064-8FED-805C16E68A34}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BACF0A00-BC9B-4064-8FED-805C16E68A34}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8DE658A8-6161-4F56-9504-824E85686662}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8DE658A8-6161-4F56-9504-824E85686662}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8DE658A8-6161-4F56-9504-824E85686662}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8DE658A8-6161-4F56-9504-824E85686662}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -53,6 +91,11 @@ Global
 		{76666543-5A66-4D6C-AC49-1F7C251B823F} = {10A2813D-C970-4F6F-9A59-94F7C972257F}
 		{1E455112-04D3-4222-B2BE-90EF9E1B6061} = {1059D2D0-D6FE-4930-9EFD-B01E5D605A1E}
 		{8A2958F6-9128-4A82-B1B0-B1ACCEB33D18} = {45E99843-33D9-4E2B-B593-296B1C89D041}
+		{E1F7A2F6-99CF-4BC1-8F22-26F94C84619F} = {10A2813D-C970-4F6F-9A59-94F7C972257F}
+		{3FE6A227-F5FA-4194-8920-0014EC4D8F2D} = {10A2813D-C970-4F6F-9A59-94F7C972257F}
+		{EFED941F-2F16-4CE9-B0C8-DB4BAA9009F0} = {1059D2D0-D6FE-4930-9EFD-B01E5D605A1E}
+		{BACF0A00-BC9B-4064-8FED-805C16E68A34} = {10A2813D-C970-4F6F-9A59-94F7C972257F}
+		{8DE658A8-6161-4F56-9504-824E85686662} = {1059D2D0-D6FE-4930-9EFD-B01E5D605A1E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {94DF2EE3-033D-46CD-9EC3-7BC808B13372}

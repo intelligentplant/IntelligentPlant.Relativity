@@ -1,60 +1,71 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Text;
 
 namespace IntelligentPlant.Relativity {
 
     /// <summary>
     /// Describes the identifiers that can be used to describe a period of time.
     /// </summary>
-    public class RelativityTimeOffsetSettings {
+    public sealed class RelativityTimeOffsetSettings {
 
         /// <summary>
-        /// Years. Not available when parsing time span literals. Quanities must be specified 
+        /// Years. Not available when parsing time span literals. Quantities must be specified 
         /// using whole numbers. When <see langword="null"/>, this unit cannot be used.
         /// </summary>
-        public string Years { get; }
+        [MaxLength(30)]
+        public string? Years { get; }
 
         /// <summary>
-        /// Months. Not available when parsing time span literals. Quanities must be specified 
+        /// Months. Not available when parsing time span literals. Quantities must be specified 
         /// using whole numbers. When <see langword="null"/>, this unit cannot be used.
         /// </summary>
-        public string Months { get; }
+        [MaxLength(30)]
+        public string? Months { get; }
 
         /// <summary>
-        /// Weeks. Quanities can be specified using whole or fractional numbers. When 
+        /// Weeks. Quantities can be specified using whole or fractional numbers. When 
         /// <see langword="null"/>, this unit cannot be used.
         /// </summary>
-        public string Weeks { get; }
+        [MaxLength(30)]
+        public string? Weeks { get; }
 
         /// <summary>
-        /// Days. Quanities can be specified using whole or fractional numbers. When 
+        /// Days. Quantities can be specified using whole or fractional numbers. When 
         /// <see langword="null"/>, this unit cannot be used.
         /// </summary>
-        public string Days { get; }
+        [MaxLength(30)]
+        public string? Days { get; }
 
         /// <summary>
-        /// Hours. Quanities can be specified using whole or fractional numbers. When 
+        /// Hours. Quantities can be specified using whole or fractional numbers. When 
         /// <see langword="null"/>, this unit cannot be used.
         /// </summary>
-        public string Hours { get; }
+        [MaxLength(30)]
+        public string? Hours { get; }
 
         /// <summary>
-        /// Minutes. Quanities can be specified using whole or fractional numbers. When 
+        /// Minutes. Quantities can be specified using whole or fractional numbers. When 
         /// <see langword="null"/>, this unit cannot be used.
         /// </summary>
-        public string Minutes { get; }
+        [MaxLength(30)]
+        public string? Minutes { get; }
 
         /// <summary>
-        /// Seconds. Quanities can be specified using whole or fractional numbers. When 
+        /// Seconds. Quantities can be specified using whole or fractional numbers. When 
         /// <see langword="null"/>, this unit cannot be used.
         /// </summary>
-        public string Seconds { get; }
+        [MaxLength(30)]
+        public string? Seconds { get; }
 
         /// <summary>
-        /// Milliseconds. Quanities can be specified using whole or fractional numbers. When 
+        /// Milliseconds. Quantities can be specified using whole or fractional numbers. When 
         /// <see langword="null"/>, this unit cannot be used.
         /// </summary>
-        public string Milliseconds { get; }
+        [MaxLength(30)]
+        public string? Milliseconds { get; }
 
 
         /// <summary>
@@ -118,6 +129,62 @@ namespace IntelligentPlant.Relativity {
             if (timeSpanUnits.All(x => x == null)) {
                 throw new ArgumentException(Resources.Error_AtLeastOneTimeSpanUnitIsRequired);
             }
+        }
+
+
+        /// <summary>
+        /// Gets the defined keywords.
+        /// </summary>
+        /// <returns>
+        ///   The defined keywords.
+        /// </returns>
+        private IEnumerable<KeyValuePair<string, string>> GetDefinedKeywords() {
+            if (Milliseconds != null) {
+                yield return new KeyValuePair<string, string>(nameof(Milliseconds), Milliseconds);
+            }
+            if (Seconds != null) {
+                yield return new KeyValuePair<string, string>(nameof(Seconds), Seconds);
+            }
+            if (Minutes != null) {
+                yield return new KeyValuePair<string, string>(nameof(Minutes), Minutes);
+            }
+            if (Hours != null) {
+                yield return new KeyValuePair<string, string>(nameof(Hours), Hours);
+            }
+            if (Days != null) {
+                yield return new KeyValuePair<string, string>(nameof(Days), Days);
+            }
+            if (Weeks != null) {
+                yield return new KeyValuePair<string, string>(nameof(Weeks), Weeks);
+            }
+            if (Months != null) {
+                yield return new KeyValuePair<string, string>(nameof(Months), Months);
+            }
+            if (Years != null) {
+                yield return new KeyValuePair<string, string>(nameof(Years), Years);
+            }
+        }
+
+
+        /// <inheritdoc/>
+        public override string ToString() {
+            var sb = new StringBuilder();
+
+            sb.Append("{");
+            var first = true;
+            foreach (var keyword in GetDefinedKeywords()) {
+                if (first) {
+                    first = false;
+                    sb.Append(' ');
+                }
+                else {
+                    sb.Append(", ");
+                }
+                sb.Append($"\"{keyword.Key}\": \"{keyword.Value}\"");
+            }
+            sb.Append(" }");
+
+            return sb.ToString();
         }
 
     }
