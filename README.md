@@ -44,41 +44,47 @@ Both absolute and relative timestamps can be parsed. Absolute timestamps are par
 var date = parser.ConvertToUtcDateTime("2019-11-15T08:56:25.0901821Z");
 ```
 
-Relative timestamps are expressed in the format `base_time [+/- offset]`, where the `base_time` matches one of the keywords defined in the parser's `BaseTimeSettings` property, and the `offset` is a number followed by one of the duration keywords defined in the parser's `TimeOffsetSettings` property (e.g. `3D` for 3 days when using the invariant culture parser). White space inside the expression is ignored and the parser uses case-insensitive matching against the `base_time` and `offset` values. 
-
-> Note that the culture of the parser is also used when parsing offset quantities. For example, when using a parser with the `fi-FI` culture, the parser will expect a comma as a decimal separator when specifying a fractional quantity.
+Relative timestamps are expressed in the format `base_time [+/- offset]`, where the `base_time` matches one of the keywords defined in the parser's `BaseTimeSettings` property, and the `offset` is a number followed by one of the duration keywords defined in the parser's `TimeOffsetSettings` property (e.g. `3D` for 3 days when using the invariant culture parser). White space inside the expression is ignored and the parser uses case-insensitive matching against the `base_time` and `offset` values
 
 For invariant and English (`en`) culture parsers, the following `base_time` values can be used:
 
-* `NOW` (or `*`) - current time.
-* `SECOND` - start of the current second.
-* `MINUTE` - start of the current minute.
-* `HOUR` - start of the current hour.
-* `DAY` - start of the current day.
-* `WEEK` - start of the current week. The `CultureInfo` for the parser is used to determine what the first day of the week is.
-* `MONTH` - start of the current month.
-* `YEAR` - start of the current year.
+| Keyword | Description | Notes |
+|---------|-------------| ----- |
+| `NOW` (or `*`) | Current time. |
+| `SECOND` | Start of the current second. |
+| `MINUTE` | Start of the current minute. |
+| `HOUR` | Start of the current hour. |
+| `DAY` | Start of the current day. |
+| `WEEK` | Start of the current week. | The `CultureInfo` for the parser is used to determine what the first day of the week is. |
+| `MONTH` | Start of the current month. |
+| `YEAR` | Start of the current year. |
 
-The following units can be used in relative timestamps with invariant and English-language parsers. Both whole and fractional quantities are allowed unless otherwise stated:
+The following units can be used in relative timestamps with invariant and English-language parsers:
 
-* `MS` - milliseconds.
-* `S` - seconds.
-* `M` - minutes.
-* `H` - hours.
-* `D` - days.
-* `W` - weeks.
-* `MO` - months. Fractional quantities are not allowed.
-* `Y` - years. Fractional quantities are not allowed.
+| Keyword | Description | Fractional Quantities Allowed |
+|---------|-------------| ----------------------------- |
+| `MS` | Milliseconds | Yes |
+| `S` | Seconds | Yes |
+| `M` | Minutes | Yes |
+| `H` | Hours | Yes |
+| `D` | Days | Yes |
+| `W` | Weeks | Yes |
+| `MO` | Months | __No__ |
+| `Y` | Years | __No__ |
 
 Examples:
 
-* `NOW + 15S` - current time plus 15 seconds.
-* `*-10y` - current time minus 10 years.
-* `day-0.5d` - start of current day minus 0.5 days (i.e. 12 hours).
-* `MONTH` - start of the current month.
-* `YEAR + 3MO` - start of current year plus 3 calendar months.
+| Example | Description |
+|---------|-------------|
+| `NOW + 15S` | Current time plus 15 seconds. |
+| `*-10y` | Current time minus 10 years. |
+| `day-0.5d` | Start of current day minus 0.5 days (i.e. 12 hours). |
+| `MONTH` | Start of the current month. |
+| `YEAR + 3MO` | Start of current year plus 3 calendar months. |
 
-Base time values are converted to absolute times relative to a given `DateTime` origin. If no origin is specified when parsing a timestamp, the current time for the parser's time zone is used::
+> Note that the culture of the parser is also used when parsing offset quantities. For example, when using a parser with the `fi-FI` culture, the parser will expect a comma as a decimal separator when specifying a fractional quantity.
+
+Base time values are converted to absolute times relative to a given `DateTime` origin. If no origin is specified when parsing a timestamp, the current time for the parser's time zone is used:
 
 ```csharp
 // No origin specified; current time for the parser's time zone is used as the origin.
@@ -96,21 +102,27 @@ The parser will parse literal time spans, as well as duration expressions. Liter
 var timeSpan = parser.ConvertToTimeSpan("3.19:03:27.775");
 ```
 
-Duration expressions are expressed in the same way as an offset on a relative timestamp i.e. a quantity followed by one of the duration keywords defined in the `TimeOffsetSettings` property of the parser. The following units can be used in duration expressions with invariant and English-language parsers. Both whole and fractional quantities are allowed unless otherwise stated:
+Duration expressions are expressed in the same way as an offset on a relative timestamp i.e. a quantity followed by one of the duration keywords defined in the `TimeOffsetSettings` property of the parser. The following units can be used in duration expressions with invariant and English-language parsers.
 
-* `MS` - milliseconds.
-* `S` - seconds.
-* `M` - minutes.
-* `H` - hours.
-* `D` - days.
-* `W` - weeks.
+| Keyword | Description | Fractional Quantities Allowed |
+|---------|-------------| ----------------------------- |
+| `MS` | Milliseconds | Yes |
+| `S` | Seconds | Yes |
+| `M` | Minutes | Yes |
+| `H` | Hours | Yes |
+| `D` | Days | Yes |
+| `W` | Weeks | Yes |
 
 Examples:
 
-* `500ms` - 500 milliseconds.
-* `15S` - 15 seconds.
-* `0.5H` - 0.5 hours (i.e. 30 minutes).
-* `1W` - 1 week.
+| Example | Description |
+|---------|-------------|
+| `500ms` | 500 milliseconds. |
+| `15S` | 15 seconds. |
+| `0.5H` | 0.5 hours (i.e. 30 minutes). |
+| `1W` | 1 week. |
+
+> Note that the culture of the parser is also used when parsing duration expressions. For example, when using a parser with the `fi-FI` culture, the parser will expect a comma as a decimal separator when specifying a fractional quantity.
 
 
 # Registering Parsers
