@@ -180,19 +180,19 @@ namespace IntelligentPlant.Relativity {
                 throw new ArgumentNullException(nameof(parser));
             }
 
-            if (Math.Abs(timeSpan.TotalDays) > 1) {
+            if (Math.Abs(timeSpan.TotalDays) >= 1) {
                 return string.Format(parser.CultureInfo, "{0}{1}", TruncateIfRequired(timeSpan.TotalDays), parser.TimeOffsetSettings.Days);
             }
 
-            if (Math.Abs(timeSpan.TotalHours) > 1) {
+            if (Math.Abs(timeSpan.TotalHours) >= 1) {
                 return string.Format(parser.CultureInfo, "{0}{1}", TruncateIfRequired(timeSpan.TotalHours), parser.TimeOffsetSettings.Hours);
             }
 
-            if (Math.Abs(timeSpan.TotalMinutes) > 1) {
+            if (Math.Abs(timeSpan.TotalMinutes) >= 1) {
                 return string.Format(parser.CultureInfo, "{0}{1}", TruncateIfRequired(timeSpan.TotalMinutes), parser.TimeOffsetSettings.Minutes);
             }
 
-            if (Math.Abs(timeSpan.TotalSeconds) > 1) {
+            if (Math.Abs(timeSpan.TotalSeconds) >= 1) {
                 return string.Format(parser.CultureInfo, "{0}{1}", TruncateIfRequired(timeSpan.TotalSeconds), parser.TimeOffsetSettings.Seconds);
             }
 
