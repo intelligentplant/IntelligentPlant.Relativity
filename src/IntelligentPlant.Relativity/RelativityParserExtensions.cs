@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 
 namespace IntelligentPlant.Relativity {
 
@@ -137,6 +138,71 @@ namespace IntelligentPlant.Relativity {
                 throw new ArgumentNullException(nameof(parser));
             }
             return parser.TryConvertToTimeSpan(durationString, out _);
+        }
+
+
+        /// <summary>
+        /// Converts a <see cref="TimeSpan"/> to a Relativity duration string.
+        /// </summary>
+        /// <param name="parser">
+        ///   The parser.
+        /// </param>
+        /// <param name="timeSpan">
+        ///   The time span.
+        /// </param>
+        /// <param name="truncate">
+        ///   When <see langword="true"/>, the duration string will be rounded up to the nearest duration unit applicable to the <paramref name="timeSpan"/>.
+        /// </param>
+        /// <returns>
+        ///   The duration string.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">
+        ///   <paramref name="parser"/> is <see langword="null"/>.
+        /// </exception>
+        /// <remarks>
+        /// 
+        /// <para>
+        ///   When <paramref name="truncate"/> is <see langword="true"/>, the duration string will 
+        ///   be rounded away from zero to the nearest duration unit applicable to the <paramref name="timeSpan"/>. 
+        ///   For example, if the <paramref name="timeSpan"/> is greater than one day and <paramref name="truncate"/> 
+        ///   is <see langword="true"/>, the duration string will be rounded up to the next day.
+        /// </para>
+        /// 
+        /// <para>
+        ///   Truncating the duration string is useful when you want to display a friendlier 
+        ///   duration at the expense of accuracy. The duration string will never be rounded 
+        ///   up or down further than to the nearest day.
+        /// </para>
+        /// 
+        /// </remarks>
+        public static string ConvertToDuration(this IRelativityParser parser, TimeSpan timeSpan, bool truncate = false) {
+            if (parser == null) {
+                throw new ArgumentNullException(nameof(parser));
+            }
+
+            if (Math.Abs(timeSpan.TotalDays) > 1) {
+                return string.Format(parser.CultureInfo, "{0}{1}", TruncateIfRequired(timeSpan.TotalDays), parser.TimeOffsetSettings.Days);
+            }
+
+            if (Math.Abs(timeSpan.TotalHours) > 1) {
+                return string.Format(parser.CultureInfo, "{0}{1}", TruncateIfRequired(timeSpan.TotalHours), parser.TimeOffsetSettings.Hours);
+            }
+
+            if (Math.Abs(timeSpan.TotalMinutes) > 1) {
+                return string.Format(parser.CultureInfo, "{0}{1}", TruncateIfRequired(timeSpan.TotalMinutes), parser.TimeOffsetSettings.Minutes);
+            }
+
+            if (Math.Abs(timeSpan.TotalSeconds) > 1) {
+                return string.Format(parser.CultureInfo, "{0}{1}", TruncateIfRequired(timeSpan.TotalSeconds), parser.TimeOffsetSettings.Seconds);
+            }
+
+            return string.Format(parser.CultureInfo, "{0}{1}", TruncateIfRequired(timeSpan.TotalMilliseconds), parser.TimeOffsetSettings.Milliseconds);
+
+            double TruncateIfRequired(double value) => truncate 
+                ? value > 0
+                    ? Math.Ceiling(value)
+                    : Math.Floor(value)
+                : value;
         }
 
     }
