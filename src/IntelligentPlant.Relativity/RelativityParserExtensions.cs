@@ -150,8 +150,16 @@ namespace IntelligentPlant.Relativity {
         /// <param name="timeSpan">
         ///   The time span.
         /// </param>
-        /// <param name="truncate">
-        ///   When <see langword="true"/>, the duration string will be rounded up to the nearest duration unit applicable to the <paramref name="timeSpan"/>.
+        /// <param name="decimalPlaces">
+        ///   The number of decimal places to use when formatting the duration string. If greater 
+        ///   than or equal to zero, the duration string will be rounded away from zero to the 
+        ///   specified number of decimal places e.g. specifying one decimal place when a time 
+        ///   span of <c>00:00:00.1234567</c> is specified will result in a duration string of 
+        ///   <c>123.5MS</c> being returned (or its equivalent localized value).
+        /// </param>
+        /// <param name="unit">
+        ///   The time unit to use in the duration string. Specify <see langword="null"/> to infer 
+        ///   a unit based on the magnitude of the <paramref name="timeSpan"/>.
         /// </param>
         /// <returns>
         ///   The duration string.
@@ -162,47 +170,86 @@ namespace IntelligentPlant.Relativity {
         /// <remarks>
         /// 
         /// <para>
-        ///   When <paramref name="truncate"/> is <see langword="true"/>, the duration string will 
-        ///   be rounded away from zero to the nearest duration unit applicable to the <paramref name="timeSpan"/>. 
-        ///   For example, if the <paramref name="timeSpan"/> is greater than one day and <paramref name="truncate"/> 
-        ///   is <see langword="true"/>, the duration string will be rounded up to the next day.
+        ///   When <paramref name="unit"/> is <see langword="null"/>, the unit used in the 
+        ///   duration string is determined by the overall magnitude of the <see cref="TimeSpan"/>. 
+        ///   For example, a time span greater than or equal to one day will be formatted as whole 
+        ///   and fractional days, a time span greater than or equal to one hour will be formatted 
+        ///   as whole and fractional hours, and so on.
         /// </para>
         /// 
         /// <para>
-        ///   Truncating the duration string is useful when you want to display a friendlier 
-        ///   duration at the expense of accuracy. The duration string will never be rounded 
-        ///   up or down further than to the nearest day.
+        ///   You can specify the number of decimal places to round the duration to using the 
+        ///   <paramref name="decimalPlaces"/> parameter. When a value of zero or greater is 
+        ///   specified, the duration string will be rounded away from zero to the specified 
+        ///   number of decimal places. For example, specifying one decimal place when a time 
+        ///   span of <c>00:00:00.1234567</c> is specified will result in a duration string of 
+        ///   <c>123.5MS</c> being returned (or its equivalent localized value).
         /// </para>
         /// 
         /// </remarks>
-        public static string ConvertToDuration(this IRelativityParser parser, TimeSpan timeSpan, bool truncate = false) {
+        public static string ConvertToDuration(this IRelativityParser parser, TimeSpan timeSpan, int decimalPlaces = -1, string? unit = null) {
             if (parser == null) {
                 throw new ArgumentNullException(nameof(parser));
             }
 
-            if (Math.Abs(timeSpan.TotalDays) >= 1) {
-                return string.Format(parser.CultureInfo, "{0}{1}", TruncateIfRequired(timeSpan.TotalDays), parser.TimeOffsetSettings.Days);
+            if (unit != null) {
+                if (unit.Equals(parser.TimeOffsetSettings.Weeks, StringComparison.OrdinalIgnoreCase)) {
+                    return Format(timeSpan.TotalDays / 7, parser.TimeOffsetSettings.Weeks!);
+                }
+                else if (unit.Equals(parser.TimeOffsetSettings.Days, StringComparison.OrdinalIgnoreCase)) {
+                    return Format(timeSpan.TotalDays, parser.TimeOffsetSettings.Days!);
+                }
+                else if (unit.Equals(parser.TimeOffsetSettings.Hours, StringComparison.OrdinalIgnoreCase)) {
+                    return Format(timeSpan.TotalHours, parser.TimeOffsetSettings.Hours!);
+                }
+                else if (unit.Equals(parser.TimeOffsetSettings.Minutes, StringComparison.OrdinalIgnoreCase)) {
+                    return Format(timeSpan.TotalMinutes, parser.TimeOffsetSettings.Minutes!);
+                }
+                else if (unit.Equals(parser.TimeOffsetSettings.Seconds, StringComparison.OrdinalIgnoreCase)) {
+                    return Format(timeSpan.TotalSeconds, parser.TimeOffsetSettings.Seconds!);
+                }
+                else if (unit.Equals(parser.TimeOffsetSettings.Milliseconds, StringComparison.OrdinalIgnoreCase)) {
+                    return Format(timeSpan.TotalMilliseconds, parser.TimeOffsetSettings.Milliseconds!);
+                }
+
+                throw new InvalidOperationException("The specified time unit is not supported.");
             }
 
-            if (Math.Abs(timeSpan.TotalHours) >= 1) {
-                return string.Format(parser.CultureInfo, "{0}{1}", TruncateIfRequired(timeSpan.TotalHours), parser.TimeOffsetSettings.Hours);
+            if (parser.TimeOffsetSettings.Days != null && Math.Abs(timeSpan.TotalDays) >= 1) {
+                return Format(timeSpan.TotalDays, parser.TimeOffsetSettings.Days);
             }
 
-            if (Math.Abs(timeSpan.TotalMinutes) >= 1) {
-                return string.Format(parser.CultureInfo, "{0}{1}", TruncateIfRequired(timeSpan.TotalMinutes), parser.TimeOffsetSettings.Minutes);
+            if (parser.TimeOffsetSettings.Hours != null && Math.Abs(timeSpan.TotalHours) >= 1) {
+                return Format(timeSpan.TotalHours, parser.TimeOffsetSettings.Hours);
             }
 
-            if (Math.Abs(timeSpan.TotalSeconds) >= 1) {
-                return string.Format(parser.CultureInfo, "{0}{1}", TruncateIfRequired(timeSpan.TotalSeconds), parser.TimeOffsetSettings.Seconds);
+            if (parser.TimeOffsetSettings.Minutes != null && Math.Abs(timeSpan.TotalMinutes) >= 1) {
+                return Format(timeSpan.TotalMinutes, parser.TimeOffsetSettings.Minutes);
             }
 
-            return string.Format(parser.CultureInfo, "{0}{1}", TruncateIfRequired(timeSpan.TotalMilliseconds), parser.TimeOffsetSettings.Milliseconds);
+            if (parser.TimeOffsetSettings.Seconds != null && Math.Abs(timeSpan.Seconds) >= 1) {
+                return Format(timeSpan.TotalSeconds, parser.TimeOffsetSettings.Seconds);
+            }
 
-            double TruncateIfRequired(double value) => truncate 
-                ? value > 0
-                    ? Math.Ceiling(value)
-                    : Math.Floor(value)
-                : value;
+            if (parser.TimeOffsetSettings.Milliseconds != null) {
+                return Format(timeSpan.TotalMilliseconds, parser.TimeOffsetSettings.Milliseconds);
+            }
+
+            throw new InvalidOperationException("Could not determine the unit to use for the formatted duration string.");
+
+            string Format(double value, string unit) {
+                return string.Format(parser.CultureInfo, "{0}{1}", RoundAwayFromZeroIfRequired(value), unit);
+            }
+
+            double RoundAwayFromZeroIfRequired(double value) {
+                if (decimalPlaces < 0) {
+                    return value;
+                }
+                var factor = Math.Pow(10, decimalPlaces);
+                return value > 0
+                    ? Math.Ceiling(value * factor) / factor
+                    : Math.Floor(value * factor) / factor;
+            }
         }
 
     }
