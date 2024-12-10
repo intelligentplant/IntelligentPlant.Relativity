@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -115,6 +116,31 @@ namespace IntelligentPlant.Relativity.Internal {
 
 
         /// <summary>
+        /// Creates a regular expression capture group for a duration unit.
+        /// </summary>
+        /// <param name="name">
+        ///   The name of the capture group.
+        /// </param>
+        /// <param name="symbol">
+        ///   The symbol for the unit.
+        /// </param>
+        /// <param name="allowFractional">
+        ///   Specifies whether fractional values are allowed.
+        /// </param>
+        /// <param name="cultureInfo">
+        ///   The culture to use for parsing numbers.
+        /// </param>
+        /// <returns>
+        ///   The regular expression capture group.
+        /// </returns>
+        private static string CreateDurationUnitRegexPattern(string name, string symbol, bool allowFractional, CultureInfo cultureInfo) {
+            return allowFractional
+                ? $@"(?:(?<{name}>\d+(?:{EscapeRegexSpecialCharacters(cultureInfo.NumberFormat?.NumberDecimalSeparator ?? CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator)}\d+)?)\s*{EscapeRegexSpecialCharacters(symbol)})?"
+                : $@"(?:(?<{name}>\d+)\s*{EscapeRegexSpecialCharacters(symbol)})?";
+        }
+
+
+        /// <summary>
         /// Creates a regular expression pattern for parsing durations.
         /// </summary>
         /// <param name="timeOffsetSettings">
@@ -133,33 +159,16 @@ namespace IntelligentPlant.Relativity.Internal {
         ///   <paramref name="cultureInfo"/> is <see langword="null"/>.
         /// </exception>
         private static string CreateDurationRegexPattern(RelativityTimeOffsetSettings timeOffsetSettings, CultureInfo cultureInfo) {
-            var timeSpanUnits = new[] {
-                timeOffsetSettings.Weeks,
-                timeOffsetSettings.Days,
-                timeOffsetSettings.Hours,
-                timeOffsetSettings.Minutes,
-                timeOffsetSettings.Seconds,
-                timeOffsetSettings.Milliseconds
-            }.Where(x => x != null).ToArray();
+            var timeSpanUnits = new [] {
+                new DurationUnit("weeks", timeOffsetSettings.Weeks, true),
+                new DurationUnit("days", timeOffsetSettings.Days, true),
+                new DurationUnit("hours", timeOffsetSettings.Hours, true),
+                new DurationUnit("minutes", timeOffsetSettings.Minutes, true),
+                new DurationUnit("seconds", timeOffsetSettings.Seconds, true),
+                new DurationUnit("milliseconds", timeOffsetSettings.Milliseconds, true)
+            }.Where(x => x.Symbol != null);
 
-            return string.Concat(
-                @"^\s*(?:(?:",
-                @"(?<count>[0-9]+)\s*(?<unit>",
-                string.Join(
-                    "|",
-                    timeSpanUnits.Select(x => EscapeRegexSpecialCharacters(x!))
-                ),
-                @")",
-                @")|(?:",
-                @"(?<count>[0-9]+",
-                EscapeRegexSpecialCharacters(cultureInfo.NumberFormat?.NumberDecimalSeparator ?? CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator),
-                @"[0-9]+)\s*(?<unit>",
-                string.Join(
-                    "|",
-                    timeSpanUnits.Select(x => EscapeRegexSpecialCharacters(x!))
-                ),
-                @")))\s*$"
-            );
+            return string.Concat(@"^\s*", string.Join(@"\s*", timeSpanUnits.Select(x => CreateDurationUnitRegexPattern(x.Name, x.Symbol!, x.AllowFractional, cultureInfo))), @"\s*$");
         }
 
 
@@ -200,25 +209,16 @@ namespace IntelligentPlant.Relativity.Internal {
                 baseTimeSettings.NowAlt
             }.Where(x => x != null).ToArray();
 
-            var timeOffsets = new[] {
-                timeOffsetSettings.Years,
-                timeOffsetSettings.Months,
-                timeOffsetSettings.Weeks,
-                timeOffsetSettings.Days,
-                timeOffsetSettings.Hours,
-                timeOffsetSettings.Minutes,
-                timeOffsetSettings.Seconds,
-                timeOffsetSettings.Milliseconds
-            }.Where(x => x != null).ToArray();
-
-            var fractionalTimeOffsets = new[] {
-                timeOffsetSettings.Weeks,
-                timeOffsetSettings.Days,
-                timeOffsetSettings.Hours,
-                timeOffsetSettings.Minutes,
-                timeOffsetSettings.Seconds,
-                timeOffsetSettings.Milliseconds
-            }.Where(x => x != null).ToArray();
+            var timeOffsetUnits = new[] {
+                new DurationUnit("years", timeOffsetSettings.Years, false),
+                new DurationUnit("months", timeOffsetSettings.Months, false),
+                new DurationUnit("weeks", timeOffsetSettings.Weeks, true),
+                new DurationUnit("days", timeOffsetSettings.Days, true),
+                new DurationUnit("hours", timeOffsetSettings.Hours, true),
+                new DurationUnit("minutes", timeOffsetSettings.Minutes, true),
+                new DurationUnit("seconds", timeOffsetSettings.Seconds, true),
+                new DurationUnit("milliseconds", timeOffsetSettings.Milliseconds, true)
+            }.Where(x => x.Symbol != null);
 
             return string.Concat(
                 @"^\s*(?<base>",
@@ -227,27 +227,8 @@ namespace IntelligentPlant.Relativity.Internal {
                     baseTimes.Select(x => EscapeRegexSpecialCharacters(x!))
                 ),
                 @")\s*(?:(?<operator>\+|-)\s*",
-                // Units that can be expresses as whole numbers. Guaranteed to have length > 0
-                @"(?:(?<count>[0-9]+)\s*(?<unit>",
-                string.Join(
-                    "|",
-                    timeOffsets.Select(x => EscapeRegexSpecialCharacters(x!))
-                ),
-                @")",
-                fractionalTimeOffsets.Length == 0
-                    ? string.Empty
-                    : string.Concat(
-                        // Units that can be expressed as fractions.
-                        @"|(?:(?<count>[0-9]+",
-                        EscapeRegexSpecialCharacters(cultureInfo.NumberFormat?.NumberDecimalSeparator ?? CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator),
-                        @"[0-9]+)\s*(?<unit>",
-                        string.Join(
-                            "|",
-                            fractionalTimeOffsets.Select(x => EscapeRegexSpecialCharacters(x!))
-                        ),
-                        @"))"
-                    ),
-                @"))?\s*$"
+                string.Join(@"\s*", timeOffsetUnits.Select(x => CreateDurationUnitRegexPattern(x.Name, x.Symbol!, x.AllowFractional, cultureInfo))),
+                @")?\s*$"
             );
         }
 
@@ -263,6 +244,24 @@ namespace IntelligentPlant.Relativity.Internal {
         /// </returns>
         private static Regex CompileRegex(string pattern) {
             return new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+        }
+
+
+        private readonly struct DurationUnit { 
+        
+            public string Name { get; }
+
+            public string? Symbol { get; }
+
+            public bool AllowFractional { get; }
+
+
+            public DurationUnit(string name, string? symbol, bool allowFractional) {
+                Name = name;
+                Symbol = symbol;
+                AllowFractional = allowFractional;
+            }
+
         }
 
     }
