@@ -410,5 +410,33 @@ namespace IntelligentPlant.Relativity.Test {
             Assert.AreEqual(123.456 * 7, parsed.TotalDays);
         }
 
+
+        [DataTestMethod]
+        [DataRow("1w 3d 14h 27m 59s 251ms", "10.14:27:59.251")]
+        [DataRow("   1w 3d 14h 27m 59s 251ms      ", "10.14:27:59.251")]
+        [DataRow("0.5d 1h", "13:00:00")]
+        [DataRow("2h37.6s", "02:00:37.600")]
+        [DataRow("1d0h15m0s3ms", "1.00:15:00.003")]
+        public void ShouldConvertCompositeDuration(string expression, string timeSpanLiteral) {
+            var parser = RelativityParser.InvariantUtc;
+
+            var timeSpanExpected = TimeSpan.Parse(timeSpanLiteral);
+            var timeSpanActual = parser.ConvertToTimeSpan(expression);
+
+            Assert.AreEqual(timeSpanExpected, timeSpanActual);
+        }
+
+
+        [TestMethod]
+        public void ShouldParseRelativeTimeWithCompositeOffset() {
+            var parser = RelativityParser.InvariantUtc;
+
+            var baseTime = DateTime.UtcNow;
+            var parsedDate = parser.ConvertToUtcDateTime("NOW - 4Y 3MO 6D 15S 243MS", baseTime);
+            var expectedDate = baseTime.AddYears(-4).AddMonths(-3).AddDays(-6).AddSeconds(-15).AddMilliseconds(-243);
+
+            Assert.AreEqual(expectedDate, parsedDate);
+        }
+
     }
 }
