@@ -256,14 +256,9 @@ namespace IntelligentPlant.Relativity.Internal {
             var match = RelativeDateRegex.Match(dateString);
             if (match.Success) {
                 var absoluteBaseDate = ConvertRelativeBaseTimeToAbsolute(match.Groups["base"].Value, currentTimeParserTz, CultureInfo, BaseTimeSettings);
-                var unit = match.Groups["unit"].Value;
-                var quantityRaw = match.Groups["count"].Value;
-                var quantity = string.IsNullOrWhiteSpace(quantityRaw) 
-                    ? 0 
-                    : double.Parse(match.Groups["count"].Value, CultureInfo);
                 var add = match.Groups["operator"].Success && "+".Equals(match.Groups["operator"].Value, StringComparison.Ordinal);
 
-                dateTime = ApplyOffset(absoluteBaseDate, unit, quantity, add, TimeOffsetSettings);
+                dateTime = ApplyOffset(absoluteBaseDate, match, add, TimeOffsetSettings);
                 return true;
             }
 
@@ -337,16 +332,13 @@ namespace IntelligentPlant.Relativity.Internal {
 
 
         /// <summary>
-        /// Adjusts a <see cref="DateTime"/> based on the specified time unit and quantity.
+        /// Adjusts a <see cref="DateTime"/> based on the offset defined by the specified regex match.
         /// </summary>
         /// <param name="baseDate">
         ///   The <see cref="DateTime"/> to adjust.
         /// </param>
-        /// <param name="unit">
-        ///   The time unit.
-        /// </param>
-        /// <param name="quantity">
-        ///   The time unit quantity.
+        /// <param name="match">
+        ///   The regex match that defines the offset.
         /// </param>
         /// <param name="add">
         ///   Indicates if the time span should be added to or removed from the <paramref name="baseDate"/>.
@@ -357,55 +349,98 @@ namespace IntelligentPlant.Relativity.Internal {
         /// <returns>
         ///   The adjusted <see cref="DateTime"/>.
         /// </returns>
-        private static DateTime ApplyOffset(DateTime baseDate, string unit, double quantity, bool add, RelativityTimeOffsetSettings timeOffsetSettings) {
-            if (quantity == 0) {
-                return baseDate;
+        private DateTime ApplyOffset(DateTime baseDate, Match match, bool add, RelativityTimeOffsetSettings timeOffsetSettings) {
+            var result = baseDate;
+            
+            var years = match.Groups["years"]?.Value;
+            if (!string.IsNullOrWhiteSpace(years)) {
+                var magnitude = int.Parse(years, NumberStyles.Integer, CultureInfo);
+                if (add) {
+                    result = result.AddYears(magnitude);
+                }
+                else {
+                    result = result.AddYears(-1 * magnitude);
+                }
             }
 
-            if (string.Equals(unit, timeOffsetSettings.Years, StringComparison.OrdinalIgnoreCase)) {
-                var wholeQuantity = Convert.ToInt32(quantity);
-                return add
-                    ? baseDate.AddYears(wholeQuantity)
-                    : baseDate.AddYears(-1 * wholeQuantity);
-            }
-            if (string.Equals(unit, timeOffsetSettings.Months, StringComparison.OrdinalIgnoreCase)) {
-                var wholeQuantity = Convert.ToInt32(quantity);
-                return add
-                    ? baseDate.AddMonths(wholeQuantity)
-                    : baseDate.AddMonths(-1 * wholeQuantity);
-            }
-            if (string.Equals(unit, timeOffsetSettings.Weeks, StringComparison.OrdinalIgnoreCase)) {
-                return add
-                    ? baseDate.AddDays(7 * quantity)
-                    : baseDate.AddDays(-7 * quantity);
-            }
-            if (string.Equals(unit, timeOffsetSettings.Days, StringComparison.OrdinalIgnoreCase)) {
-                return add
-                    ? baseDate.AddDays(quantity)
-                    : baseDate.AddDays(-1 * quantity);
-            }
-            if (string.Equals(unit, timeOffsetSettings.Hours, StringComparison.OrdinalIgnoreCase)) {
-                return add
-                    ? baseDate.AddHours(quantity)
-                    : baseDate.AddHours(-1 * quantity);
-            }
-            if (string.Equals(unit, timeOffsetSettings.Minutes, StringComparison.OrdinalIgnoreCase)) {
-                return add
-                    ? baseDate.AddMinutes(quantity)
-                    : baseDate.AddMinutes(-1 * quantity);
-            }
-            if (string.Equals(unit, timeOffsetSettings.Seconds, StringComparison.OrdinalIgnoreCase)) {
-                return add
-                    ? baseDate.AddSeconds(quantity)
-                    : baseDate.AddSeconds(-1 * quantity);
-            }
-            if (string.Equals(unit, timeOffsetSettings.Milliseconds, StringComparison.OrdinalIgnoreCase)) {
-                return add
-                    ? baseDate.AddMilliseconds(quantity)
-                    : baseDate.AddMilliseconds(-1 * quantity);
+            var months = match.Groups["months"]?.Value;
+            if (!string.IsNullOrWhiteSpace(months)) {
+                var magnitude = int.Parse(months, NumberStyles.Integer, CultureInfo);
+                if (add) {
+                    result = result.AddMonths(magnitude);
+                }
+                else {
+                    result = result.AddMonths(-1 * magnitude);
+                }
             }
 
-            return baseDate;
+            var weeks = match.Groups["weeks"]?.Value;
+            if (!string.IsNullOrWhiteSpace(weeks)) {
+                var magnitude = double.Parse(weeks, CultureInfo);
+                if (add) {
+                    result = result.AddDays(7 * magnitude);
+                }
+                else {
+                    result = result.AddDays(-7 * magnitude);
+                }
+            }
+
+            var days = match.Groups["days"]?.Value;
+            if (!string.IsNullOrWhiteSpace(days)) {
+                var magnitude = double.Parse(days, CultureInfo);
+                if (add) {
+                    result = result.AddDays(magnitude);
+                }
+                else {
+                    result = result.AddDays(-1 * magnitude);
+                }
+            }
+
+            var hours = match.Groups["hours"]?.Value;
+            if (!string.IsNullOrWhiteSpace(hours)) {
+                var magnitude = double.Parse(hours, CultureInfo);
+                if (add) {
+                    result = result.AddHours(magnitude);
+                }
+                else {
+                    result = result.AddHours(-1 * magnitude);
+                }
+            }
+
+            var minutes = match.Groups["minutes"]?.Value;
+            if (!string.IsNullOrWhiteSpace(minutes)) {
+                var magnitude = double.Parse(minutes, CultureInfo);
+                if (add) {
+                    result = result.AddMinutes(magnitude);
+                }
+                else {
+                    result = result.AddMinutes(-1 * magnitude);
+                }
+            }
+
+            var seconds = match.Groups["seconds"]?.Value;
+            if (!string.IsNullOrWhiteSpace(seconds)) {
+                var magnitude = double.Parse(seconds, CultureInfo);
+                if (add) {
+                    result = result.AddSeconds(magnitude);
+                }
+                else {
+                    result = result.AddSeconds(-1 * magnitude);
+                }
+            }
+
+            var milliseconds = match.Groups["milliseconds"]?.Value;
+            if (!string.IsNullOrWhiteSpace(milliseconds)) {
+                var magnitude = double.Parse(milliseconds, CultureInfo);
+                if (add) {
+                    result = result.AddMilliseconds(magnitude);
+                }
+                else {
+                    result = result.AddMilliseconds(-1 * magnitude);
+                }
+            }
+
+            return result;
         }
 
 
@@ -429,29 +464,42 @@ namespace IntelligentPlant.Relativity.Internal {
                 return false;
             }
 
-            var unit = match.Groups["unit"].Value;
-            var quantity = Convert.ToDouble(match.Groups["count"].Value, CultureInfo);
+            timeSpan = TimeSpan.Zero;
 
-            if (string.Equals(unit, TimeOffsetSettings.Weeks, StringComparison.OrdinalIgnoreCase)) {
-                timeSpan = TimeSpan.FromTicks((long) (TimeSpan.TicksPerDay * 7 * quantity));
+            var weeks = match.Groups["weeks"]?.Value;
+            if (!string.IsNullOrWhiteSpace(weeks)) {
+                var magnitude = double.Parse(weeks, CultureInfo);
+                timeSpan = timeSpan.Add(TimeSpan.FromTicks((long) (TimeSpan.TicksPerDay * 7 * magnitude)));
             }
-            else if (string.Equals(unit, TimeOffsetSettings.Days, StringComparison.OrdinalIgnoreCase)) {
-                timeSpan = TimeSpan.FromTicks((long) (TimeSpan.TicksPerDay * quantity));
+
+            var days = match.Groups["days"]?.Value;
+            if (!string.IsNullOrWhiteSpace(days)) {
+                var magnitude = double.Parse(days, CultureInfo);
+                timeSpan = timeSpan.Add(TimeSpan.FromTicks((long) (TimeSpan.TicksPerDay * magnitude)));
             }
-            else if (string.Equals(unit, TimeOffsetSettings.Hours, StringComparison.OrdinalIgnoreCase)) {
-                timeSpan = TimeSpan.FromTicks((long) (TimeSpan.TicksPerHour * quantity));
+
+            var hours = match.Groups["hours"]?.Value;
+            if (!string.IsNullOrWhiteSpace(hours)) {
+                var magnitude = double.Parse(hours, CultureInfo);
+                timeSpan = timeSpan.Add(TimeSpan.FromTicks((long) (TimeSpan.TicksPerHour * magnitude)));
             }
-            else if (string.Equals(unit, TimeOffsetSettings.Minutes, StringComparison.OrdinalIgnoreCase)) {
-                timeSpan = TimeSpan.FromTicks((long) (TimeSpan.TicksPerMinute * quantity));
+
+            var minutes = match.Groups["minutes"]?.Value;
+            if (!string.IsNullOrWhiteSpace(minutes)) {
+                var magnitude = double.Parse(minutes, CultureInfo);
+                timeSpan = timeSpan.Add(TimeSpan.FromTicks((long) (TimeSpan.TicksPerMinute * magnitude)));
             }
-            else if (string.Equals(unit, TimeOffsetSettings.Seconds, StringComparison.OrdinalIgnoreCase)) {
-                timeSpan = TimeSpan.FromTicks((long) (TimeSpan.TicksPerSecond * quantity));
+
+            var seconds = match.Groups["seconds"]?.Value;
+            if (!string.IsNullOrWhiteSpace(seconds)) {
+                var magnitude = double.Parse(seconds, CultureInfo);
+                timeSpan = timeSpan.Add(TimeSpan.FromTicks((long) (TimeSpan.TicksPerSecond * magnitude)));
             }
-            else if (string.Equals(unit, TimeOffsetSettings.Milliseconds, StringComparison.OrdinalIgnoreCase)) {
-                timeSpan = TimeSpan.FromTicks((long) (TimeSpan.TicksPerMillisecond * quantity));
-            }
-            else {
-                timeSpan = default;
+
+            var milliseconds = match.Groups["milliseconds"]?.Value;
+            if (!string.IsNullOrWhiteSpace(milliseconds)) {
+                var magnitude = double.Parse(milliseconds, CultureInfo);
+                timeSpan = timeSpan.Add(TimeSpan.FromTicks((long) (TimeSpan.TicksPerMillisecond * magnitude)));
             }
 
             return true;

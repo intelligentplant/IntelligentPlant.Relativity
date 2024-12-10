@@ -72,6 +72,8 @@ The following units can be used in relative timestamps with invariant and Englis
 | `MO` | Months | __No__ |
 | `Y` | Years | __No__ |
 
+Combinations of units can be used to specify more complex offsets.
+
 Examples:
 
 | Example | Description |
@@ -81,6 +83,8 @@ Examples:
 | `day-0.5d` | Start of current day minus 0.5 days (i.e. 12 hours). |
 | `MONTH` | Start of the current month. |
 | `YEAR + 3MO` | Start of current year plus 3 calendar months. |
+| `WEEK - 12H 30M 57S` | Start of the current week minus 12 hours 30 minutes 57 seconds. |
+| `MONTH + 8h30m` | Start of the current month plus 8 hours 30 minutes. |
 
 > Note that the culture of the parser is also used when parsing offset quantities. For example, when using a parser with the `fi-FI` culture, the parser will expect a comma as a decimal separator when specifying a fractional quantity.
 
@@ -114,6 +118,8 @@ Duration expressions are expressed in the same way as an offset on a relative ti
 | `D` | Days | Yes |
 | `W` | Weeks | Yes |
 
+Combinations of units can be used to specify more complex durations.
+
 Examples:
 
 | Example | Description |
@@ -122,6 +128,8 @@ Examples:
 | `15S` | 15 seconds. |
 | `0.5H` | 0.5 hours (i.e. 30 minutes). |
 | `1W` | 1 week. |
+| `2D 6H 30M` | 2 days 6 hours 30 minutes. |
+| `1w3d12h` | 1 week 3 days 12 hours. |
 
 > Note that the culture of the parser is also used when parsing duration expressions. For example, when using a parser with the `fi-FI` culture, the parser will expect a comma as a decimal separator when specifying a fractional quantity.
 
